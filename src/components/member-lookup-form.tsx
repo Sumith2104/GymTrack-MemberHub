@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,9 +9,23 @@ import { Loader2, LogIn, Mail, Shield } from 'lucide-react';
 
 export function MemberLookupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [emailInput, setEmailInput] = useState('');
   const [memberIdInput, setMemberIdInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // If the URL has 'email', 'memberId', or 'message' params, it means a submission attempt was made.
+    // Since we are still on this page, the login must have failed or validation failed.
+    // In either case, we should stop the loading spinner.
+    const emailParam = searchParams.get('email');
+    const memberIdParam = searchParams.get('memberId');
+    const messageParam = searchParams.get('message');
+    
+    if ((emailParam && memberIdParam) || messageParam) {
+      setIsSubmitting(false);
+    }
+  }, [searchParams]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,6 +33,8 @@ export function MemberLookupForm() {
       setIsSubmitting(true);
       router.push(`/?email=${encodeURIComponent(emailInput.trim())}&memberId=${encodeURIComponent(memberIdInput.trim())}`);
     } else {
+      // Explicitly stop submission state for client-side validation failure.
+      setIsSubmitting(false);
       router.push('/?message=Please enter both email and Member ID.');
     }
   };
