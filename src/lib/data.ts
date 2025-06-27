@@ -70,7 +70,7 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
         if (daysUntilExpiry < 0) {
             calculatedStatus = 'Expired';
         } else if (daysUntilExpiry <= 7) {
-            calculatedStatus = 'Expiring Soon';
+            calculatedStatus = 'expiring_soon';
         }
     }
 
@@ -289,7 +289,7 @@ export async function updateMemberProfile(memberDisplayId: string, data: { name:
         .ilike('member_id', memberDisplayId);
 
     if (error) {
-        console.error(`[updateMemberProfile] Supabase error updating profile for member ${memberDisplayId}:`, error);
+        console.error(`[updateMemberProfile] Supabase error updating profile for member ${memberId}:`, error);
         return { success: false, error: 'Database error while updating profile.' };
     }
 
@@ -307,7 +307,7 @@ export async function updateMemberEmail(memberDisplayId: string, newEmail: strin
     .ilike('member_id', memberDisplayId);
 
   if (error) {
-    console.error(`[updateMemberEmail] Supabase error updating email for member ${memberDisplayId}:`, error);
+    console.error(`[updateMemberEmail] Supabase error updating email for member ${memberId}:`, error);
     return { success: false, error: 'Database error while updating email.' };
   }
 
