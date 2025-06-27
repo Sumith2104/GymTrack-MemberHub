@@ -1,6 +1,7 @@
 
 import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig } from './types';
 import { supabase } from './supabaseClient';
+import { differenceInDays } from 'date-fns';
 
 export async function getMemberProfile(email: string, memberDisplayId: string): Promise<Member | null> {
   if (!supabase) {
@@ -55,6 +56,24 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
       return null;
     }
 
+    let calculatedStatus = rawData.membership_status;
+    if (rawData.expiry_date) {
+        const expiryDate = new Date(rawData.expiry_date);
+        const today = new Date();
+        
+        // Set hours to 0 to compare dates only
+        expiryDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        
+        const daysUntilExpiry = differenceInDays(expiryDate, today);
+
+        if (daysUntilExpiry < 0) {
+            calculatedStatus = 'Expired';
+        } else if (daysUntilExpiry <= 7) {
+            calculatedStatus = 'Expiring Soon';
+        }
+    }
+
     const member: Member = {
       id: rawData.id,
       member_id: rawData.member_id,
@@ -64,7 +83,7 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
       phone_number: rawData.phone_number,
       join_date: rawData.join_date,
       membership_type: rawData.membership_type,
-      membership_status: rawData.membership_status,
+      membership_status: calculatedStatus,
       expiry_date: rawData.expiry_date,
       plan_id: rawData.plan_id,
       plan_price: rawData.plans?.price ?? null,
