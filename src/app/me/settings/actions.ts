@@ -2,7 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { updateMemberEmail, updateMemberProfile, updateMemberProfileUrl } from '@/lib/data';
+import { updateMemberEmail, updateMemberProfile } from '@/lib/data';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { sendOtpEmail } from '@/lib/email';
@@ -155,75 +155,6 @@ export async function updateProfile(
         return { success: true, message: 'Profile updated successfully!' };
     } catch (error) {
         console.error('[updateProfile] Error:', error);
-        return { success: false, message: 'An unexpected server error occurred.' };
-    }
-}
-
-export interface UpdateProfilePictureState {
-    success: boolean;
-    message: string;
-    profileUrl?: string;
-}
-
-export async function updateProfilePicture(
-    currentState: UpdateProfilePictureState,
-    formData: FormData
-): Promise<UpdateProfilePictureState> {
-    const memberUUID = formData.get('memberUUID') as string;
-    const file = formData.get('profilePicture') as File;
-
-    if (!memberUUID) {
-        return { success: false, message: 'Member identifier is missing.' };
-    }
-    if (!file || file.size === 0) {
-        return { success: false, message: 'Please select an image to upload.' };
-    }
-    if (!supabase) {
-        return { success: false, message: 'Storage service is not configured.' };
-    }
-
-    const fileExtension = file.name.split('.').pop();
-    const filePath = `${memberUUID}/profile-${Date.now()}.${fileExtension}`;
-
-    try {
-        // Upload file to Supabase Storage.
-        // Removed `upsert: true` as each upload has a unique path, simplifying permissions.
-        const { error: uploadError } = await supabase.storage
-            .from('avatars') // Bucket name, must exist and be public
-            .upload(filePath, file, {
-                cacheControl: '3600',
-            });
-
-        if (uploadError) {
-            console.error('[updateProfilePicture] Supabase Storage upload error:', uploadError);
-            return { success: false, message: `Failed to upload profile picture. Storage error: ${uploadError.message}` };
-        }
-
-        // Get public URL of the uploaded file
-        const { data: { publicUrl } } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(filePath);
-
-        if (!publicUrl) {
-            return { success: false, message: 'Could not get public URL for the uploaded image.' };
-        }
-
-        // Update the member's profile_url in the database
-        const dbResult = await updateMemberProfileUrl(memberUUID, publicUrl);
-        if (!dbResult.success) {
-            // If the DB update fails, remove the orphaned file from storage to prevent clutter.
-            await supabase.storage.from('avatars').remove([filePath]);
-            return { success: false, message: dbResult.error || 'Failed to update profile picture in database.' };
-        }
-
-        revalidatePath('/me/settings');
-        revalidatePath('/me/dashboard');
-        revalidatePath('/me/messages');
-
-        return { success: true, message: 'Profile picture updated successfully!', profileUrl: publicUrl };
-
-    } catch (error) {
-        console.error('[updateProfilePicture] Error:', error);
         return { success: false, message: 'An unexpected server error occurred.' };
     }
 }

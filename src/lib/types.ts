@@ -16,7 +16,6 @@ export type Member = {
   formatted_gym_id: string | null; // User-facing Gym ID
   gym_name?: string | null;
   payment_id?: string | null;
-  profile_url: string | null;
 };
 
 export type Checkin = {

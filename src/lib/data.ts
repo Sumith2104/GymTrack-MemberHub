@@ -28,7 +28,6 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
         expiry_date,
         plan_id,
         gym_id,
-        profile_url,
         plans (
           price
         ),
@@ -92,7 +91,6 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
       formatted_gym_id: rawData.gyms?.formatted_gym_id ?? null,
       gym_name: rawData.gyms?.name ?? null,
       payment_id: rawData.gyms?.payment_id ?? null,
-      profile_url: rawData.profile_url,
     };
 
     return member;
@@ -358,22 +356,4 @@ export async function getGymSmtpConfig(gymId: string): Promise<SmtpConfig | null
     console.error(`[getGymSmtpConfig] Unexpected error for gym ${gymId}:`, e.message || e);
     return null;
   }
-}
-
-export async function updateMemberProfileUrl(memberUUID: string, profileUrl: string): Promise<{ success: boolean; error?: string }> {
-  if (!supabase) {
-    return { success: false, error: "Supabase client not initialized." };
-  }
-
-  const { error } = await supabase
-    .from('members')
-    .update({ profile_url: profileUrl })
-    .eq('id', memberUUID); // Use the internal UUID
-
-  if (error) {
-    console.error(`[updateMemberProfileUrl] Supabase error updating profile URL for member ${memberUUID}:`, error);
-    return { success: false, error: 'Database error while updating profile picture.' };
-  }
-
-  return { success: true };
 }

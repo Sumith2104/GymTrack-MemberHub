@@ -1,9 +1,10 @@
+
 "use client";
 
 import type { Member } from '@/lib/types';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -89,7 +90,6 @@ export function MemberProfileCard({ member }: MemberProfileCardProps) {
     <Card>
       <CardHeader className="flex flex-row items-center space-x-4 pb-4">
         <Avatar className="h-20 w-20">
-          <AvatarImage src={member.profile_url || undefined} alt={member.name} />
           <AvatarFallback className="text-2xl font-semibold">{getInitials(member.name)}</AvatarFallback>
         </Avatar>
         <div>

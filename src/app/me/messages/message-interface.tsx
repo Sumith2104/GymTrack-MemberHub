@@ -12,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Loader2, Users, RefreshCw, AlertTriangle, Search, X } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 import { sendMessage } from './actions';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/lib/supabaseClient';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -271,7 +271,6 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
 
                               {isSender && (
                                   <Avatar className="h-8 w-8">
-                                      <AvatarImage src={member.profile_url || undefined} alt={member.name} />
                                       <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
                                   </Avatar>
                               )}
