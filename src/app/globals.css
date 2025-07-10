@@ -3,17 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 
-  The explicit body font-family rule below is removed 
-  to allow Tailwind's theme (fontFamily.body in tailwind.config.ts) 
-  to correctly apply 'Inter' as the body font.
-*/
-/*
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-*/
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -85,7 +74,6 @@ body {
     --chart-4: 0 0% 67%;   
     --chart-5: 0 0% 80%;   
 
-    /* Sidebar theme variables - adjusted for new palette */
     --sidebar-background: 0 0% 6%; /* #101010 Slightly different dark for sidebar */
     --sidebar-foreground: 0 0% 88%; /* #E0E0E0 Light gray for sidebar text */
     --sidebar-primary: 51 100% 50%; /* #FFD700 Gold */

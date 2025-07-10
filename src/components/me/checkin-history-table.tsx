@@ -18,7 +18,6 @@ interface CheckinHistoryTableProps {
   checkins: Checkin[];
 }
 
-// Helper component for client-side date formatting to prevent hydration mismatch
 const ClientFormattedDate: React.FC<{ dateString: string | null | undefined; options?: Intl.DateTimeFormatOptions; fallback?: string }> = ({ dateString, options, fallback = 'N/A' }) => {
   const [formattedDate, setFormattedDate] = useState<string | null>(null);
 
@@ -28,10 +27,8 @@ const ClientFormattedDate: React.FC<{ dateString: string | null | undefined; opt
     } else {
       setFormattedDate(fallback);
     }
-  }, [dateString, options, fallback]); // Re-run if props change
+  }, [dateString, options, fallback]);
 
-  // Render a placeholder during initial render (server and client pre-useEffect)
-  // and when formattedDate is not yet set.
   return <>{formattedDate === null ? '...' : formattedDate}</>;
 };
 

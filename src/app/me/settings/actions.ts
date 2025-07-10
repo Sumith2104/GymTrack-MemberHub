@@ -37,7 +37,6 @@ export async function requestEmailChange(
   try {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Send the OTP via the new email service
     const emailResult = await sendOtpEmail({ to: currentEmail, otp, gymId });
 
     if (!emailResult.success) {
@@ -102,7 +101,7 @@ const profileSchema = z.object({
       (val) => (val === '' ? undefined : val),
       z.coerce
         .number({ invalid_type_error: 'Age must be a number.' })
-        .int({ message: 'Age must be a whole number.' })
+        .int({ message: 'Age must be whole number.' })
         .positive({ message: 'Age must be a positive number.' })
         .optional()
     ),
@@ -151,7 +150,7 @@ export async function updateProfile(
         }
 
         revalidatePath('/me/settings');
-        revalidatePath('/me/dashboard'); // Also revalidate dashboard to show updated info
+        revalidatePath('/me/dashboard');
         return { success: true, message: 'Profile updated successfully!' };
     } catch (error) {
         console.error('[updateProfile] Error:', error);

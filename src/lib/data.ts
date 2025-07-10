@@ -42,7 +42,7 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') { // "query returned no rows"
+      if (error.code === 'PGRST116') {
         console.log(`[getMemberProfile] No member found for Email: "${normalizedEmail}", Member ID: "${normalizedMemberId}".`);
       } else {
         console.error(`[getMemberProfile] Supabase error for Email: "${normalizedEmail}", Member ID: "${normalizedMemberId}".`, error);
@@ -60,7 +60,6 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
         const expiryDate = new Date(rawData.expiry_date);
         const today = new Date();
         
-        // Set hours to 0 to compare dates only
         expiryDate.setHours(0, 0, 0, 0);
         today.setHours(0, 0, 0, 0);
         
@@ -87,7 +86,6 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
       plan_id: rawData.plan_id,
       plan_price: rawData.plans?.price ?? null,
       gym_id: rawData.gym_id,
-      // Correctly and safely access nested gym data, assuming a to-one relationship.
       formatted_gym_id: rawData.gyms?.formatted_gym_id ?? null,
       gym_name: rawData.gyms?.name ?? null,
       payment_id: rawData.gyms?.payment_id ?? null,
@@ -271,7 +269,6 @@ export async function updateMemberProfile(memberDisplayId: string, data: { name:
 
     const { name, phone_number, age } = data;
     
-    // Build the update object. Only include fields that are present in the data.
     const updateObject: { [key: string]: any } = {};
     if (name !== undefined) updateObject.name = name;
     if (phone_number !== undefined) updateObject.phone_number = phone_number || null;
@@ -287,7 +284,7 @@ export async function updateMemberProfile(memberDisplayId: string, data: { name:
         .ilike('member_id', memberDisplayId);
 
     if (error) {
-        console.error(`[updateMemberProfile] Supabase error updating profile for member ${memberId}:`, error);
+        console.error(`[updateMemberProfile] Supabase error updating profile for member ${memberDisplayId}:`, error);
         return { success: false, error: 'Database error while updating profile.' };
     }
 
@@ -305,7 +302,7 @@ export async function updateMemberEmail(memberDisplayId: string, newEmail: strin
     .ilike('member_id', memberDisplayId);
 
   if (error) {
-    console.error(`[updateMemberEmail] Supabase error updating email for member ${memberId}:`, error);
+    console.error(`[updateMemberEmail] Supabase error updating email for member ${memberDisplayId}:`, error);
     return { success: false, error: 'Database error while updating email.' };
   }
 
@@ -344,7 +341,7 @@ export async function getGymSmtpConfig(gymId: string): Promise<SmtpConfig | null
     return {
       host: data.app_host,
       port: portNumber,
-      secure: portNumber === 465, // true for 465, false for other ports like 587
+      secure: portNumber === 465,
       auth: {
         user: data.app_email,
         pass: data.app_pass,

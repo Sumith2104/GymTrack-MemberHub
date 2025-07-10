@@ -18,14 +18,11 @@ export default async function HomePage({
   if (emailParam && memberIdParam) {
     const member = await getMemberProfile(emailParam, memberIdParam);
     if (member) {
-      // On successful login, redirect to the member dashboard
       redirect(`/me/dashboard?memberId=${encodeURIComponent(member.member_id)}&email=${encodeURIComponent(member.email)}`);
     } else {
-      // If member fetch failed (e.g., wrong credentials), set an error to display on this page.
       displayError = 'Invalid email or Member ID. Please check your details and try again.';
     }
   } else if (searchParams?.message) {
-    // If there's a message from client-side form validation (e.g., "Please enter both fields")
     displayError = searchParams.message;
   }
 
@@ -36,7 +33,6 @@ export default async function HomePage({
         <div className="w-full max-w-md space-y-8">
           <MemberLookupForm />
 
-          {/* Error Alert: Shows if displayError is set */}
           {displayError && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" /> 
@@ -45,7 +41,6 @@ export default async function HomePage({
             </Alert>
           )}
 
-          {/* Verifying Details Alert: Shows when actively trying to log in AND no error yet */}
           {emailParam && memberIdParam && !displayError && (
              <Alert>
                <Search className="h-4 w-4" />
@@ -56,7 +51,6 @@ export default async function HomePage({
              </Alert>
            )}
           
-          {/* Initial welcome message: Shows on initial load if no login attempted and no error */}
           {!emailParam && !memberIdParam && !displayError && (
             <Alert>
                 <Info className="h-4 w-4" />

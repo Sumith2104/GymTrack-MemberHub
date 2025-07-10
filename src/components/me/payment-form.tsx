@@ -52,7 +52,6 @@ export function PaymentForm({ member }: PaymentFormProps) {
         const diff = differenceInDays(expiryDate, today);
         setDaysUntilExpiry(diff);
     } else {
-        // If there's no expiry date, they likely need to pay, so we can treat it as expired.
         setDaysUntilExpiry(-1); 
     }
   }, [member.expiry_date]);
@@ -89,7 +88,7 @@ export function PaymentForm({ member }: PaymentFormProps) {
 
   const paymentLinks = baseUpiLink ? {
       any: baseUpiLink,
-      gpay: baseUpiLink, // Google Pay uses the standard upi:// scheme
+      gpay: baseUpiLink,
       phonepe: baseUpiLink.replace('upi://', 'phonepe://'),
       paytm: baseUpiLink.replace('upi://', 'paytmmp://'),
   } : null;

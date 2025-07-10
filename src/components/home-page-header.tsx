@@ -12,7 +12,6 @@ export function HomePageHeader() {
                 <span className="text-xl font-semibold font-headline">Member Hub</span>
             </Link>
             <div className="flex items-center gap-1">
-                {/* Intentionally empty as navigation is handled in the member area */}
             </div>
         </header>
     );
