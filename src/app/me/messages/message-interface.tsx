@@ -254,7 +254,7 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
                                   </Avatar>
                               )}
                               
-                              <div className={cn('flex items-center gap-2', isSender ? 'flex-row-reverse' : 'flex-row')}>
+                              <div className={cn('flex items-end gap-2', isSender ? 'flex-row-reverse' : 'flex-row')}>
                                 <div className={cn('max-w-xs rounded-lg p-3 md:max-w-md shadow', isSender ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none')}>
                                     <p className="text-sm">{message.content}</p>
                                 </div>
