@@ -2,8 +2,33 @@
 import { getMemberProfile } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, UserSearch, CreditCard } from "lucide-react";
-import { PaymentForm } from '@/components/me/payment-form';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const PaymentForm = dynamic(() => import('@/components/me/payment-form').then(mod => mod.PaymentForm), {
+  ssr: false,
+  loading: () => <PaymentFormSkeleton />,
+});
+
+function PaymentFormSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-10 w-1/3" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-1/4" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="pt-4 space-y-2">
+        <Skeleton className="h-4 w-1/4" />
+        <Skeleton className="h-12 w-full rounded-lg" />
+      </div>
+      <div className="pt-2">
+        <Skeleton className="h-10 w-32" />
+      </div>
+    </div>
+  );
+}
 
 export default async function PaymentsPage({
   searchParams,
