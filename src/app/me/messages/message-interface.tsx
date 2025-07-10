@@ -14,8 +14,6 @@ import { cn, formatDate } from '@/lib/utils';
 import { sendMessage } from './actions';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/lib/supabaseClient';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
 
 interface MessageInterfaceProps {
   initialMessages: Message[];
@@ -249,25 +247,21 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
                       {msgs.map((message) => {
                         const isSender = message.sender_id === member.member_id;
                         return (
-                          <div key={message.id} className={cn('flex w-full items-end gap-2', isSender ? 'justify-end' : 'justify-start')}>
+                          <div key={message.id} className={cn('flex items-end gap-2 group', isSender ? 'justify-end' : 'justify-start')}>
                               {!isSender && (
                                   <Avatar className="h-8 w-8">
                                       <AvatarFallback className="bg-primary text-primary-foreground">{gymInitials}</AvatarFallback>
                                   </Avatar>
                               )}
                               
-                              <TooltipProvider delayDuration={100}>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div className={cn('max-w-xs rounded-lg p-3 md:max-w-md shadow', isSender ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none')}>
-                                        <p className="text-sm">{message.content}</p>
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
+                              <div className={cn('flex items-center gap-2', isSender ? 'flex-row-reverse' : 'flex-row')}>
+                                <div className={cn('max-w-xs rounded-lg p-3 md:max-w-md shadow', isSender ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none')}>
+                                    <p className="text-sm">{message.content}</p>
+                                </div>
+                                <div className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                     <ClientTimestamp dateString={message.created_at} />
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                                </div>
+                              </div>
 
                               {isSender && (
                                   <Avatar className="h-8 w-8">
