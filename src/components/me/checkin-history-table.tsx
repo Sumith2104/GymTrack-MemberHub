@@ -39,10 +39,10 @@ export function CheckinHistoryTable({ checkins }: CheckinHistoryTableProps) {
   }
 
   const dateTimeFormatOptions: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
     month: 'short',
     day: 'numeric',
-    hour: '2-digit',
+    year: 'numeric',
+    hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   };
@@ -52,17 +52,17 @@ export function CheckinHistoryTable({ checkins }: CheckinHistoryTableProps) {
       <TableCaption>A list of your recent gym check-ins.</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[250px]">Check-in</TableHead>
-          <TableHead>Check-out</TableHead>
+          <TableHead className="w-1/2">Check-in</TableHead>
+          <TableHead className="w-1/2">Check-out</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {checkins.map((checkin) => (
           <TableRow key={checkin.id}>
-            <TableCell className="font-medium">
+            <TableCell className="font-medium whitespace-nowrap">
               <ClientFormattedDate dateString={checkin.check_in_time} options={dateTimeFormatOptions} />
             </TableCell>
-            <TableCell>
+            <TableCell className="whitespace-nowrap">
               <ClientFormattedDate dateString={checkin.check_out_time} options={dateTimeFormatOptions} fallback="N/A" />
             </TableCell>
           </TableRow>
