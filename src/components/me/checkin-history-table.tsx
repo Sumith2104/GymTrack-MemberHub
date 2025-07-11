@@ -84,12 +84,12 @@ export function CheckinHistoryTable({ checkins }: CheckinHistoryTableProps) {
 
   return (
     <div className="space-y-6">
-      <TableCaption>A list of your recent gym check-ins, grouped by month.</TableCaption>
-      {Object.entries(groupedCheckins).map(([month, monthCheckins]) => (
+      {Object.entries(groupedCheckins).map(([month, monthCheckins], index) => (
         <div key={month}>
           <h3 className="text-xl font-semibold mb-4 text-primary">{month}</h3>
           <div className="border rounded-lg">
             <Table>
+              {index === 0 && <TableCaption>A list of your recent gym check-ins, grouped by month.</TableCaption>}
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-1/3 sm:w-1/2">Day</TableHead>
