@@ -5,13 +5,7 @@ import { ListChecks, BarChartHorizontalBig, Info } from "lucide-react";
 import { getMemberProfile, getMemberCheckins } from '@/lib/data';
 import type { Checkin } from '@/lib/types';
 import { CheckinHistoryTable } from '@/components/me/checkin-history-table';
-import dynamic from 'next/dynamic';
-import { Skeleton } from "@/components/ui/skeleton";
-
-const CheckinFrequencyChart = dynamic(() => import('@/components/me/checkin-frequency-chart').then(mod => mod.CheckinFrequencyChart), {
-  ssr: false,
-  loading: () => <Skeleton className="h-[300px] w-full" />,
-});
+import { CheckinFrequencyChart } from '@/components/me/checkin-frequency-chart';
 
 
 export default async function CheckInsPage({
