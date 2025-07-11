@@ -11,7 +11,7 @@ interface CheckinFrequencyChartProps {
 }
 
 interface MonthlyCheckinData {
-  month: string; // e.g., "Jan 2024"
+  month: string;
   visits: number;
 }
 
@@ -31,12 +31,10 @@ const processCheckinDataForChart = (checkins: Checkin[]): MonthlyCheckinData[] =
     }
   });
 
-  // Sort by date for chronological order on the chart
   const sortedMonths = Object.keys(monthlyCounts).sort((a, b) => {
     return new Date(a).getTime() - new Date(b).getTime();
   });
   
-  // Limit to last 12 months for better readability, or adjust as needed
   const recentMonths = sortedMonths.slice(-12);
 
   return recentMonths.map((monthYear) => ({
@@ -70,13 +68,12 @@ export function CheckinFrequencyChart({ checkins }: CheckinFrequencyChartProps) 
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            // tickFormatter={(value) => value.slice(0, 3)} // Abbreviate month name if needed
           />
           <YAxis 
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            allowDecimals={false} // Ensure whole numbers for visit counts
+            allowDecimals={false}
            />
            <ChartTooltip
             cursor={false}

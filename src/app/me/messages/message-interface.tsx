@@ -22,18 +22,13 @@ interface MessageInterfaceProps {
 
 type FormState = 'idle' | 'submitting' | 'success' | 'error';
 
-// Helper component to prevent hydration mismatch for timestamps.
-// It renders the formatted time only on the client-side.
 const ClientTimestamp: React.FC<{ dateString: string }> = ({ dateString }) => {
   const [formattedTime, setFormattedTime] = useState<string | null>(null);
 
   useEffect(() => {
-    // This effect runs only on the client, after the component has mounted.
     setFormattedTime(formatDate(dateString, { hour: 'numeric', minute: '2-digit', hour12: true }));
   }, [dateString]);
 
-  // Return null on the server and initial client render to avoid mismatch.
-  // The time will appear after hydration.
   return <>{formattedTime}</>;
 };
 
@@ -60,13 +55,11 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
   const gymName = member.gym_name || 'Gym Admin';
   const gymInitials = getInitials(gymName);
 
-  // Syncs server-fetched messages and stops the refresh spinner
   useEffect(() => {
     setMessages(initialMessages);
     setIsRefreshing(false);
   }, [initialMessages]);
   
-  // Realtime subscription for new messages
   useEffect(() => {
     if (!supabase) {
       console.error('Supabase client not initialized for realtime.');
@@ -80,7 +73,6 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
         { event: 'INSERT', schema: 'public', table: 'messages' },
         (payload) => {
           const receivedMessage = payload.new as Message;
-          // RLS should filter messages, but we also check client-side for the current conversation
           const isForThisConversation =
             (receivedMessage.sender_id === member.member_id && receivedMessage.receiver_id === adminId) ||
             (receivedMessage.sender_id === adminId && receivedMessage.receiver_id === member.member_id);
@@ -88,7 +80,7 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
           if (isForThisConversation) {
             setMessages((prev) => {
               if (prev.some((m) => m.id === receivedMessage.id)) {
-                return prev; // Avoid adding duplicates
+                return prev;
               }
               return [...prev, receivedMessage];
             });
@@ -97,13 +89,11 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
       )
       .subscribe();
 
-    // Cleanup subscription on component unmount
     return () => {
       supabase.removeChannel(channel);
     };
   }, [member.member_id, adminId]);
 
-  // Group messages by date on the client side to avoid hydration errors
   useEffect(() => {
     const groupMessagesByDate = (msgs: Message[]) => {
       const groups: { [key: string]: Message[] } = {};
@@ -128,12 +118,11 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
   }, [messages]);
 
 
-  // Scrolls to the bottom when messages update
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
-  }, [groupedMessages]); // Depends on groupedMessages to scroll after render
+  }, [groupedMessages]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -147,7 +136,7 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
     setFormState('submitting');
     setErrorMessage('');
     const messageContent = newMessage;
-    setNewMessage(''); // Clear input immediately
+    setNewMessage('');
     
     try {
         const result = await sendMessage({
@@ -160,10 +149,7 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
         
         if (result.success && result.data) {
             setFormState('success');
-            // Manually add the sent message to the state.
-            // The realtime listener has a duplicate check, so this is safe even with potential race conditions.
             setMessages((prev) => {
-                // Ensure we don't add a duplicate if the realtime event somehow fires and updates state first.
                 if (prev.some(m => m.id === result.data!.id)) {
                     return prev;
                 }
@@ -172,12 +158,12 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
         } else {
             setFormState('error');
             setErrorMessage(result.error || 'An unknown error occurred.');
-            setNewMessage(messageContent); // Restore message on error
+            setNewMessage(messageContent);
         }
     } catch (error) {
         setFormState('error');
         setErrorMessage('Failed to send message. Please try again later.');
-        setNewMessage(messageContent); // Restore message on error
+        setNewMessage(messageContent);
         console.error(error);
     }
   };

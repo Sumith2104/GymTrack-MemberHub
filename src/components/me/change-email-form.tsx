@@ -44,14 +44,14 @@ export function ChangeEmailForm({ member }: ChangeEmailFormProps) {
   const [requestState, requestAction] = useActionState(requestEmailChange, initialRequestState);
   const [verifyState, verifyAction] = useActionState(verifyEmailChange, initialVerifyState);
   
-  const [step, setStep] = useState(1); // 1 for email input, 2 for OTP verification
+  const [step, setStep] = useState(1);
 
   useEffect(() => {
     if (requestState.success && requestState.otp) {
-      setStep(2); // Move to OTP step on success
+      setStep(2);
       toast({
         title: "OTP Sent",
-        description: requestState.message, // Use the message from the server action
+        description: requestState.message,
         duration: 10000,
         variant: 'default',
       });

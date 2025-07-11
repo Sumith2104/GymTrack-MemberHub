@@ -49,7 +49,6 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6">
       <MemberProfileCard member={member} />
-      {/* Additional cards or sections for the dashboard can be added here */}
     </div>
   );
 }

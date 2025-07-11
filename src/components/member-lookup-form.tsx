@@ -15,9 +15,6 @@ export function MemberLookupForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // If the URL has 'email', 'memberId', or 'message' params, it means a submission attempt was made.
-    // Since we are still on this page, the login must have failed or validation failed.
-    // In either case, we should stop the loading spinner.
     const emailParam = searchParams.get('email');
     const memberIdParam = searchParams.get('memberId');
     const messageParam = searchParams.get('message');
@@ -33,7 +30,6 @@ export function MemberLookupForm() {
       setIsSubmitting(true);
       router.push(`/?email=${encodeURIComponent(emailInput.trim())}&memberId=${encodeURIComponent(memberIdInput.trim())}`);
     } else {
-      // Explicitly stop submission state for client-side validation failure.
       setIsSubmitting(false);
       router.push('/?message=Please enter both email and Member ID.');
     }
