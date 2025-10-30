@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 export default function OnlineTrainerPage() {
   return (
@@ -8,7 +8,7 @@ export default function OnlineTrainerPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Bot className="h-6 w-6 text-primary" />
+            <Sparkles className="h-6 w-6 text-primary" />
             Online Trainer
           </CardTitle>
         </CardHeader>
