@@ -213,7 +213,7 @@ export default function OnlineTrainerPage() {
             )}
           </div>
 
-        </GridContent>
+        </CardContent>
       </Card>
     </div>
   );
