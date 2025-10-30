@@ -14,7 +14,8 @@ import {
   LogOut,
   ArrowLeft,
   CreditCard,
-  Settings
+  Settings,
+  Bot
 } from 'lucide-react';
 import {
   Sheet,
@@ -49,6 +50,7 @@ export function MemberHubNavigation() {
     { href: "/me/check-ins", icon: ListChecks, label: "Check-ins" },
     { href: "/me/announcements", icon: Megaphone, label: "Announcements" },
     { href: "/me/messages", icon: MessageSquare, label: "Messages" },
+    { href: "/me/online-trainer", icon: Bot, label: "Online Trainer" },
     { href: "/me/payments", icon: CreditCard, label: "Payments" },
     { href: "/me/settings", icon: Settings, label: "Settings" },
   ];
