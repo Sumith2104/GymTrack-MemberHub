@@ -46,6 +46,7 @@ const prompt = ai.definePrompt({
   name: 'workoutPlannerPrompt',
   input: { schema: WorkoutPlanInputSchema },
   output: { schema: WorkoutPlanOutputSchema },
+  model: 'googleai/gemini-1.5-flash-latest',
   prompt: `You are an expert fitness coach. Your task is to create a personalized workout plan based on the user's goals, experience level, and available time.
 
 Generate a structured workout plan for a user with the following profile:
