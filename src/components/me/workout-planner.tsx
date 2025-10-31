@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, AlertTriangle, Sparkles, CalendarDays, Barbell, TrendingUp } from 'lucide-react';
+import { Loader2, AlertTriangle, Sparkles, CalendarDays, Dumbbell, TrendingUp } from 'lucide-react';
 import { Separator } from '../ui/separator';
 
 const fitnessGoals = [
@@ -192,7 +192,7 @@ export function WorkoutPlanner() {
                 <div className="flex flex-wrap gap-4 pt-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2"><TrendingUp className="h-4 w-4"/> {workoutPlan.weeklySchedule[0].focus} Split</div>
                     <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4"/> {workoutPlan.weeklySchedule.length} days/week</div>
-                    <div className="flex items-center gap-2"><Barbell className="h-4 w-4"/> Beginner Friendly</div>
+                    <div className="flex items-center gap-2"><Dumbbell className="h-4 w-4"/> Beginner Friendly</div>
                 </div>
             </CardHeader>
             <CardContent>
