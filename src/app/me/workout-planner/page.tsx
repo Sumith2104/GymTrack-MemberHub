@@ -24,10 +24,10 @@ export default function WorkoutPlannerPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl">
             <Dumbbell className="h-6 w-6 text-primary" />
-            Smart Workout Planner
+            Workout Planner
           </CardTitle>
           <CardDescription>
-            Generate a personalized workout plan based on your goals and experience level.
+            Select your experience level to get a pre-built workout plan.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { generateWorkoutPlan, type WorkoutPlanOutput } from '@/ai/flows/workout-planner-flow';
+import { getWorkoutPlan, type WorkoutPlanOutput } from '@/app/me/workout-planner/actions';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Accordion,
@@ -28,23 +27,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2, AlertTriangle, Sparkles, CalendarDays, Dumbbell, TrendingUp } from 'lucide-react';
 import { Separator } from '../ui/separator';
 
-const fitnessGoals = [
-  { id: "build-muscle", label: "Build Muscle" },
-  { id: "lose-fat", label: "Lose Fat" },
-  { id: "improve-endurance", label: "Improve Endurance" },
-  { id: "increase-strength", label: "Increase Strength" },
-  { id: "general-fitness", label: "General Fitness" },
-];
-
 const experienceLevels = ["Beginner", "Intermediate", "Advanced"] as const;
-const daysPerWeekOptions = ["1", "2", "3", "4", "5", "6", "7"];
 
 const formSchema = z.object({
-  goals: z.array(z.string()).refine(value => value.some(item => item), {
-    message: "You have to select at least one goal.",
-  }),
-  experience: z.enum(experienceLevels),
-  daysPerWeek: z.string().refine(val => daysPerWeekOptions.includes(val), { message: "Please select number of days." }),
+  experience: z.enum(experienceLevels, { required_error: "Please select an experience level."}),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -54,12 +40,10 @@ export function WorkoutPlanner() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
+  const { control, handleSubmit } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      goals: [],
       experience: "Beginner",
-      daysPerWeek: "3",
     },
   });
 
@@ -68,14 +52,14 @@ export function WorkoutPlanner() {
     setError(null);
     setWorkoutPlan(null);
     try {
-      const plan = await generateWorkoutPlan({
-        ...data,
-        daysPerWeek: parseInt(data.daysPerWeek, 10),
-      });
+      const plan = await getWorkoutPlan(data.experience);
+      if (!plan) {
+        throw new Error('No plan found for the selected experience level.');
+      }
       setWorkoutPlan(plan);
     } catch (err) {
       console.error(err);
-      setError("Failed to generate workout plan. Please try again later.");
+      setError("Failed to load workout plan. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -85,91 +69,36 @@ export function WorkoutPlanner() {
     <div className="space-y-8">
       <Card>
         <CardHeader>
-            <CardTitle>Create Your Plan</CardTitle>
-            <CardDescription>Fill out the form below to get a customized workout plan.</CardDescription>
+            <CardTitle>Select Your Plan</CardTitle>
+            <CardDescription>Choose your experience level to see a recommended workout plan.</CardDescription>
         </CardHeader>
         <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-2">
-                <Label>What are your fitness goals?</Label>
-                <Controller
-                    name="goals"
+                    <Label htmlFor="experience-level">Fitness Experience Level</Label>
+                    <Controller
+                    name="experience"
                     control={control}
                     render={({ field }) => (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        {fitnessGoals.map((item) => (
-                        <div key={item.id} className="flex items-center space-x-2">
-                            <Checkbox
-                            id={item.id}
-                            checked={field.value?.includes(item.label)}
-                            onCheckedChange={(checked) => {
-                                return checked
-                                ? field.onChange([...field.value, item.label])
-                                : field.onChange(
-                                    field.value?.filter(
-                                    (value) => value !== item.label
-                                    )
-                                );
-                            }}
-                            />
-                            <label htmlFor={item.id} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            {item.label}
-                            </label>
-                        </div>
-                        ))}
-                    </div>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <SelectTrigger id="experience-level">
+                            <SelectValue placeholder="Select your experience" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {experienceLevels.map(level => (
+                            <SelectItem key={level} value={level}>{level}</SelectItem>
+                            ))}
+                        </SelectContent>
+                        </Select>
                     )}
-                />
-                {errors.goals && <p className="text-sm font-medium text-destructive">{errors.goals.message}</p>}
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="experience-level">Fitness Experience Level</Label>
-                        <Controller
-                        name="experience"
-                        control={control}
-                        render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger id="experience-level">
-                                <SelectValue placeholder="Select your experience" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {experienceLevels.map(level => (
-                                <SelectItem key={level} value={level}>{level}</SelectItem>
-                                ))}
-                            </SelectContent>
-                            </Select>
-                        )}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="days-per-week">Workout Days Per Week</Label>
-                        <Controller
-                        name="daysPerWeek"
-                        control={control}
-                        render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger id="days-per-week">
-                                <SelectValue placeholder="Select days" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {daysPerWeekOptions.map(day => (
-                                <SelectItem key={day} value={day}>{day} Day{parseInt(day) > 1 ? 's' : ''}</SelectItem>
-                                ))}
-                            </SelectContent>
-                            </Select>
-                        )}
-                        />
-                    </div>
+                    />
                 </div>
 
                 <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
                 {isLoading ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating Plan...</>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Getting Plan...</>
                 ) : (
-                    <><Sparkles className="mr-2 h-4 w-4" /> Generate Plan</>
+                    <><Sparkles className="mr-2 h-4 w-4" /> Get Plan</>
                 )}
                 </Button>
             </form>
@@ -192,7 +121,6 @@ export function WorkoutPlanner() {
                 <div className="flex flex-wrap gap-4 pt-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2"><TrendingUp className="h-4 w-4"/> {workoutPlan.weeklySchedule[0].focus} Split</div>
                     <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4"/> {workoutPlan.weeklySchedule.length} days/week</div>
-                    <div className="flex items-center gap-2"><Dumbbell className="h-4 w-4"/> Beginner Friendly</div>
                 </div>
             </CardHeader>
             <CardContent>
