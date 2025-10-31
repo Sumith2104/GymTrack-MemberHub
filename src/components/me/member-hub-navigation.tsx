@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -14,7 +15,8 @@ import {
   ArrowLeft,
   CreditCard,
   Settings,
-  Sparkles
+  Sparkles,
+  Weight
 } from 'lucide-react';
 import {
   Sheet,
@@ -50,6 +52,7 @@ export function MemberHubNavigation() {
     { href: "/me/announcements", icon: Megaphone, label: "Announcements" },
     { href: "/me/messages", icon: MessageSquare, label: "Messages" },
     { href: "/me/workout-planner", icon: Sparkles, label: "Workout Planner" },
+    { href: "/me/workout-tracking", icon: Weight, label: "Workout Tracking" },
     { href: "/me/payments", icon: CreditCard, label: "Payments" },
     { href: "/me/settings", icon: Settings, label: "Settings" },
   ];

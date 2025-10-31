@@ -16,6 +16,7 @@ export type Member = {
   formatted_gym_id: string | null; // User-facing Gym ID
   gym_name?: string | null;
   payment_id?: string | null;
+  profile_url?: string | null;
 };
 
 export type Checkin = {
@@ -61,4 +62,31 @@ export type SmtpConfig = {
     pass: string;
   };
   from: string;
+};
+
+export type WorkoutExercise = {
+    id: string; // uuid
+    workout_id: string; // FK to workouts.id
+    name: string;
+    sets: number;
+    reps: number;
+    weight: number;
+    created_at: string;
+};
+
+export type Workout = {
+    id: string; // uuid
+    member_id: string; // FK to members.id
+    date: string; // date
+    notes: string | null;
+    created_at: string;
+    exercises: WorkoutExercise[];
+};
+
+export type BodyWeightLog = {
+    id: string; // uuid
+    member_id: string; // FK to members.id
+    date: string; // date
+    weight: number;
+    created_at: string;
 };
