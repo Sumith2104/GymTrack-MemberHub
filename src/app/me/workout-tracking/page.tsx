@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Weight, Dumbbell, BarChart3, TrendingUp, LineChart, PlusCircle } from "lucide-react";
+import { Weight, Dumbbell, BarChart3, TrendingUp, LineChart } from "lucide-react";
 import { LogWorkoutForm } from "@/components/me/log-workout-form";
 import { getMemberProfile } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -63,10 +63,22 @@ export default async function WorkoutTrackingPage({
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview"><BarChart3 className="w-4 h-4 mr-2"/>Overview</TabsTrigger>
-          <TabsTrigger value="log"><Dumbbell className="w-4 h-4 mr-2"/>Workout Log</TabsTrigger>
-          <TabsTrigger value="weight"><LineChart className="w-4 h-4 mr-2"/>Weight</TabsTrigger>
-          <TabsTrigger value="prs"><TrendingUp className="w-4 h-4 mr-2"/>Personal Records</TabsTrigger>
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="log" className="flex items-center gap-2">
+            <Dumbbell className="h-4 w-4" />
+            <span className="hidden sm:inline">Workout Log</span>
+          </TabsTrigger>
+          <TabsTrigger value="weight" className="flex items-center gap-2">
+            <LineChart className="h-4 w-4" />
+            <span className="hidden sm:inline">Weight</span>
+          </TabsTrigger>
+          <TabsTrigger value="prs" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            <span className="hidden sm:inline">Personal Records</span>
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview">
@@ -106,7 +118,60 @@ export default async function WorkoutTrackingPage({
               <CardDescription>
                 Monitor your body weight changes over time.
                 Implementation is pending.
-              </CardDescription>
+              </d'use client';
+
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+import { useMediaQuery } from '@/hooks/use-media-query';
+
+const data = [
+  { name: 'Jan', desktop: 186, mobile: 80 },
+  { name: 'Feb', desktop: 305, mobile: 200 },
+  { name: 'Mar', desktop: 237, mobile: 120 },
+  { name: 'Apr', desktop: 73, mobile: 190 },
+  { name: 'May', desktop: 209, mobile: 130 },
+  { name: 'Jun', desktop: 214, mobile: 140 },
+];
+
+export function RecentSales() {
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+  return (
+    <ResponsiveContainer width="100%" height={350}>
+      <BarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis
+          dataKey="name"
+          stroke="#888888"
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+        />
+        <YAxis
+          stroke="#888888"
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(value) => `$${value}`}
+        />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="desktop" fill="#adfa1d" radius={[4, 4, 0, 0]} />
+        {isDesktop && (
+          <Bar dataKey="mobile" fill="#1d82fa" radius={[4, 4, 0, 0]} />
+        )}
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+escription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <p className="text-muted-foreground">A chart of your weight log and an input form will be available here.</p>
