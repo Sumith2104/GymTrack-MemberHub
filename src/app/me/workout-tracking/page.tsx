@@ -118,60 +118,7 @@ export default async function WorkoutTrackingPage({
               <CardDescription>
                 Monitor your body weight changes over time.
                 Implementation is pending.
-              </d'use client';
-
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import { useMediaQuery } from '@/hooks/use-media-query';
-
-const data = [
-  { name: 'Jan', desktop: 186, mobile: 80 },
-  { name: 'Feb', desktop: 305, mobile: 200 },
-  { name: 'Mar', desktop: 237, mobile: 120 },
-  { name: 'Apr', desktop: 73, mobile: 190 },
-  { name: 'May', desktop: 209, mobile: 130 },
-  { name: 'Jun', desktop: 214, mobile: 140 },
-];
-
-export function RecentSales() {
-  const isDesktop = useMediaQuery('(min-width: 768px)');
-  return (
-    <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis
-          dataKey="name"
-          stroke="#888888"
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-        />
-        <YAxis
-          stroke="#888888"
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(value) => `$${value}`}
-        />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="desktop" fill="#adfa1d" radius={[4, 4, 0, 0]} />
-        {isDesktop && (
-          <Bar dataKey="mobile" fill="#1d82fa" radius={[4, 4, 0, 0]} />
-        )}
-      </BarChart>
-    </ResponsiveContainer>
-  );
-}
-escription>
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <p className="text-muted-foreground">A chart of your weight log and an input form will be available here.</p>
