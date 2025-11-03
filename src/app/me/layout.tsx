@@ -22,7 +22,7 @@ export default function MemberHubLayout({
       <Suspense fallback={<HeaderFallback />}>
         <MemberHubHeader />
       </Suspense>
-      <main className="flex-1 p-6 bg-background">
+      <main className="flex-1 p-4 sm:p-6 bg-background">
         {children}
       </main>
     </div>

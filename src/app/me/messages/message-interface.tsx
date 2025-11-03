@@ -170,7 +170,8 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 flex-1 min-h-0">
-      <div className="md:col-span-1 lg:col-span-1 hidden md:flex flex-col">
+      {/* Member list - hidden on mobile */}
+      <div className="hidden md:flex flex-col">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Users />Members</CardTitle>
@@ -194,6 +195,7 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
         </Card>
       </div>
 
+      {/* Main chat interface - spans full width on mobile */}
       <div className="col-span-1 md:col-span-2 lg:col-span-3">
         <Card className="flex flex-col h-full">
             <CardHeader className="flex flex-row items-center justify-between border-b">
@@ -211,13 +213,9 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
                     {isRefreshing ? <Loader2 className="h-5 w-5 animate-spin" /> : <RefreshCw className="h-5 w-5" />}
                     <span className="sr-only">Refresh chat</span>
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                    <X className="h-5 w-5" />
-                    <span className="sr-only">Close chat</span>
-                  </Button>
                 </div>
             </CardHeader>
-          <ScrollArea ref={scrollAreaRef} className="flex-1 p-6">
+          <ScrollArea ref={scrollAreaRef} className="flex-1 p-4 md:p-6">
               <div className="space-y-4">
               {Object.keys(groupedMessages).length === 0 ? (
                 <div className="flex h-full items-center justify-center text-muted-foreground">

@@ -12,7 +12,6 @@ import {
   Dumbbell,
   MessageSquare,
   LogOut,
-  ArrowLeft,
   CreditCard,
   Settings,
   Sparkles,
@@ -30,7 +29,6 @@ import {
 
 export function MemberHubNavigation() {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const router = useRouter();
   
   const memberId = searchParams.get('memberId');
@@ -59,8 +57,6 @@ export function MemberHubNavigation() {
     { href: "/me/settings", icon: Settings, label: "Settings" },
   ];
 
-  const isDashboardPage = pathname === '/me/dashboard';
-
   return (
     <>
       {/* Desktop Navigation: Visible on medium screens and up */}
@@ -79,9 +75,8 @@ export function MemberHubNavigation() {
         </Button>
       </nav>
 
-      {/* Mobile Navigation: Burger menu or Back button */}
+      {/* Mobile Navigation: Burger menu */}
       <div className="md:hidden">
-        {isDashboardPage ? (
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -125,12 +120,6 @@ export function MemberHubNavigation() {
               </nav>
             </SheetContent>
           </Sheet>
-        ) : (
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-6 w-6" />
-            <span className="sr-only">Go back</span>
-          </Button>
-        )}
       </div>
     </>
   );
