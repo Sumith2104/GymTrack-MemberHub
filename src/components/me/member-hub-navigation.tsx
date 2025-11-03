@@ -16,7 +16,8 @@ import {
   CreditCard,
   Settings,
   Sparkles,
-  Weight
+  Weight,
+  Bot
 } from 'lucide-react';
 import {
   Sheet,
@@ -53,6 +54,7 @@ export function MemberHubNavigation() {
     { href: "/me/messages", icon: MessageSquare, label: "Messages" },
     { href: "/me/workout-planner", icon: Sparkles, label: "Workout Planner" },
     { href: "/me/workout-tracking", icon: Weight, label: "Workout Tracking" },
+    { href: "/me/chatbot", icon: Bot, label: "Chatbot" },
     { href: "/me/payments", icon: CreditCard, label: "Payments" },
     { href: "/me/settings", icon: Settings, label: "Settings" },
   ];
