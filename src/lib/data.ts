@@ -1,5 +1,5 @@
 
-import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig, Workout } from './types';
+import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig, Workout, WorkoutExercise } from './types';
 import { supabase } from './supabaseClient';
 import { differenceInDays } from 'date-fns';
 
@@ -362,10 +362,9 @@ export async function createWorkout(workout: Workout): Promise<{ success: boolea
     return { success: false, error: 'Database connection not available.' };
   }
   
-  // This now calls a Supabase RPC function 'create_workout_with_exercises'
-  // which handles the transaction on the database side.
   const { data, error } = await supabase
     .rpc('create_workout_with_exercises', {
+      p_member_id: workout.member_id,
       p_date: workout.date,
       p_notes: workout.notes,
       p_exercises: workout.exercises,
@@ -376,8 +375,6 @@ export async function createWorkout(workout: Workout): Promise<{ success: boolea
     return { success: false, error: `Failed to save workout session: ${error.message}` };
   }
 
-  // The RPC function should return the newly created workout record.
-  // We don't have the full exercise details here, but the main goal is confirmation.
   return { success: true, data: data as Workout };
 }
 

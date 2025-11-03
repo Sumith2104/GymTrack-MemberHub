@@ -87,4 +87,3 @@ export async function logWorkoutAction(
     return { success: false, message: 'An unexpected server error occurred.' };
   }
 }
-
