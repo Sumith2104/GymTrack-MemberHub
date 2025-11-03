@@ -1,5 +1,5 @@
 
-import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig } from './types';
+import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig, Workout } from './types';
 import { supabase } from './supabaseClient';
 import { differenceInDays } from 'date-fns';
 
@@ -28,6 +28,7 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
         expiry_date,
         plan_id,
         gym_id,
+        profile_url,
         plans (
           price
         ),
@@ -89,6 +90,7 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
       formatted_gym_id: rawData.gyms?.formatted_gym_id ?? null,
       gym_name: rawData.gyms?.name ?? null,
       payment_id: rawData.gyms?.payment_id ?? null,
+      profile_url: rawData.profile_url ?? null,
     };
 
     return member;
@@ -353,4 +355,67 @@ export async function getGymSmtpConfig(gymId: string): Promise<SmtpConfig | null
     console.error(`[getGymSmtpConfig] Unexpected error for gym ${gymId}:`, e.message || e);
     return null;
   }
+}
+
+export async function createWorkout(workout: Workout): Promise<{ success: boolean; data?: Workout; error?: string }> {
+  if (!supabase) {
+    return { success: false, error: 'Database connection not available.' };
+  }
+
+  const { exercises, ...workoutDetails } = workout;
+
+  // Insert the main workout record
+  const { data: workoutData, error: workoutError } = await supabase
+    .from('workouts')
+    .insert(workoutDetails)
+    .select()
+    .single();
+
+  if (workoutError) {
+    console.error('[createWorkout] Error inserting workout:', workoutError);
+    return { success: false, error: 'Failed to save workout session.' };
+  }
+
+  if (!workoutData) {
+    return { success: false, error: 'Failed to get workout ID after creation.' };
+  }
+
+  // Add the workout_id to each exercise
+  const exercisesToInsert = exercises.map(ex => ({
+    ...ex,
+    workout_id: workoutData.id,
+  }));
+
+  // Insert all exercises
+  const { data: exercisesData, error: exercisesError } = await supabase
+    .from('workout_exercises')
+    .insert(exercisesToInsert)
+    .select();
+
+  if (exercisesError) {
+    console.error('[createWorkout] Error inserting exercises:', exercisesError);
+    // Optional: Attempt to delete the orphaned workout record for consistency
+    await supabase.from('workouts').delete().eq('id', workoutData.id);
+    return { success: false, error: 'Failed to save workout exercises.' };
+  }
+
+  return { success: true, data: { ...workoutData, exercises: exercisesData } };
+}
+
+export async function updateProfilePicture(memberUUID: string, profileUrl: string): Promise<{ success: boolean; error?: string; }> {
+  if (!supabase) {
+    return { success: false, error: "Database connection not available." };
+  }
+  
+  const { error } = await supabase
+    .from('members')
+    .update({ profile_url: profileUrl })
+    .eq('id', memberUUID);
+
+  if (error) {
+    console.error(`[updateProfilePicture] Supabase error for member ${memberUUID}:`, error);
+    return { success: false, error: 'Failed to update profile picture in the database.' };
+  }
+
+  return { success: true };
 }

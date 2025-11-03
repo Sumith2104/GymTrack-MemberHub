@@ -67,20 +67,20 @@ export type SmtpConfig = {
 
 export type WorkoutExercise = {
     id: string; // uuid
-    workout_id: string; // FK to workouts.id
+    workout_id?: string; // FK to workouts.id
     name: string;
     sets: number;
     reps: number;
     weight: number;
-    created_at: string;
+    created_at?: string;
 };
 
 export type Workout = {
-    id: string; // uuid
+    id?: string; // uuid
     member_id: string; // FK to members.id
     date: string; // date
     notes: string | null;
-    created_at: string;
+    created_at?: string;
     exercises: WorkoutExercise[];
 };
 

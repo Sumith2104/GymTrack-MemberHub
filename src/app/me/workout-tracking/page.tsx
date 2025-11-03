@@ -2,9 +2,51 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Weight, Dumbbell, BarChart3, TrendingUp, LineChart, PlusCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LogWorkoutForm } from "@/components/me/log-workout-form";
+import { getMemberProfile } from '@/lib/data';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info, UserSearch } from "lucide-react";
+import Link from 'next/link';
 
-export default function WorkoutTrackingPage() {
+export default async function WorkoutTrackingPage({
+  searchParams,
+}: {
+  searchParams?: { memberId?: string; email?: string };
+}) {
+  const memberDisplayId = searchParams?.memberId;
+  const email = searchParams?.email;
+
+  if (!memberDisplayId || !email) {
+    return (
+      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <Alert variant="destructive">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Information Missing</AlertTitle>
+          <AlertDescription>
+            Member ID and Email are required to view workout tracking. Please access this page via your dashboard.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  const member = await getMemberProfile(email, memberDisplayId);
+
+  if (!member) {
+    return (
+      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <Alert variant="destructive">
+          <UserSearch className="h-4 w-4" />
+          <AlertTitle>Cannot Load Page</AlertTitle>
+          <AlertDescription>
+            Could not retrieve your profile. Please check your login details or use the 
+            <Link href="/" className="underline hover:text-destructive-foreground/80"> main lookup page</Link>.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -12,9 +54,7 @@ export default function WorkoutTrackingPage() {
             <Weight className="h-8 w-8 text-primary" />
             Workout Tracking
         </h1>
-        <Button>
-            <PlusCircle className="mr-2 h-4 w-4" /> Log New Workout
-        </Button>
+        <LogWorkoutForm memberId={member.id} />
       </div>
       
       <p className="text-muted-foreground">
