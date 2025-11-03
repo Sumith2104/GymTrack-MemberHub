@@ -3,13 +3,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-
-export const ChatMessageSchema = z.object({
-  role: z.enum(['user', 'model']),
-  content: z.string(),
-});
-
-export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+import { ChatMessageSchema } from '@/lib/types';
+import type { ChatMessage } from '@/lib/types';
 
 const HistorySchema = z.array(ChatMessageSchema);
 

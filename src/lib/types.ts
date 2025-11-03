@@ -1,3 +1,4 @@
+import { z } from 'zod';
 
 export type Member = {
   id: string; // Internal UUID
@@ -90,3 +91,10 @@ export type BodyWeightLog = {
     weight: number;
     created_at: string;
 };
+
+export const ChatMessageSchema = z.object({
+  role: z.enum(['user', 'model']),
+  content: z.string(),
+});
+
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;

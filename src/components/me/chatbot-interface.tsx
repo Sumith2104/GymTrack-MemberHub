@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getChatbotResponse } from '@/app/me/chatbot/actions';
-import type { ChatMessage } from '@/ai/flows/chatbot-flow';
+import type { ChatMessage } from '@/lib/types';
 import { Bot, Loader2, Send, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

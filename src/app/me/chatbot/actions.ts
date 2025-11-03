@@ -2,7 +2,7 @@
 'use server';
 
 import { generateChatResponse } from '@/ai/flows/chatbot-flow';
-import type { ChatMessage } from '@/ai/flows/chatbot-flow';
+import type { ChatMessage } from '@/lib/types';
 
 export async function getChatbotResponse(history: ChatMessage[]): Promise<string> {
   if (history.length === 0) {
