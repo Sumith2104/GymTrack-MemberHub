@@ -80,7 +80,9 @@ export function LogWorkoutForm({ memberId }: LogWorkoutFormProps) {
     handleSubmit,
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isValid },
+    setValue,
+    watch,
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -88,6 +90,7 @@ export function LogWorkoutForm({ memberId }: LogWorkoutFormProps) {
       notes: '',
       exercises: [{ name: '', sets: 3, reps: 10, weight: 0 }],
     },
+    mode: 'onChange',
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -95,6 +98,8 @@ export function LogWorkoutForm({ memberId }: LogWorkoutFormProps) {
     name: "exercises",
   });
   
+  const watchedDate = watch('date');
+
   useEffect(() => {
     if (actionState.message) {
       toast({
@@ -109,22 +114,6 @@ export function LogWorkoutForm({ memberId }: LogWorkoutFormProps) {
     }
   }, [actionState, toast, reset]);
   
-  const processSubmit = (data: FormValues) => {
-    const formData = new FormData();
-    formData.append('memberId', memberId);
-    formData.append('date', format(data.date, 'yyyy-MM-dd'));
-    formData.append('notes', data.notes || '');
-
-    data.exercises.forEach((ex, index) => {
-        formData.append(`exercises[${index}].name`, ex.name);
-        formData.append(`exercises-sets-${index}`, String(ex.sets));
-        formData.append(`exercises-reps-${index}`, String(ex.reps));
-        formData.append(`exercises-weight-${index}`, String(ex.weight));
-    });
-    
-    formAction(formData);
-  };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -139,7 +128,10 @@ export function LogWorkoutForm({ memberId }: LogWorkoutFormProps) {
             Add your exercises and track your progress for today's session.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(processSubmit)} className="space-y-6">
+        <form action={formAction} className="space-y-6">
+            <input type="hidden" name="memberId" value={memberId} />
+            <input type="hidden" name="date" value={format(watchedDate, 'yyyy-MM-dd')} />
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date">Workout Date</Label>
@@ -149,18 +141,18 @@ export function LogWorkoutForm({ memberId }: LogWorkoutFormProps) {
                         variant={"outline"}
                         className={cn(
                             "w-full justify-start text-left font-normal",
-                            !control._getWatch("date") && "text-muted-foreground"
+                            !watchedDate && "text-muted-foreground"
                         )}
                         >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {control._getWatch("date") ? formatDate(control._getWatch("date").toISOString(), {year: 'numeric', month: 'long', day: 'numeric'}) : <span>Pick a date</span>}
+                        {watchedDate ? formatDate(watchedDate.toISOString(), {year: 'numeric', month: 'long', day: 'numeric'}) : <span>Pick a date</span>}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                         <Calendar
                         mode="single"
-                        selected={control._getWatch("date")}
-                        onSelect={(day) => control._fields.date?._f.onChange(day)}
+                        selected={watchedDate}
+                        onSelect={(day) => setValue('date', day || new Date(), { shouldValidate: true })}
                         initialFocus
                         />
                     </PopoverContent>
@@ -174,6 +166,7 @@ export function LogWorkoutForm({ memberId }: LogWorkoutFormProps) {
                   id="notes"
                   placeholder="Any notes about today's workout? e.g., 'Felt strong today', 'Lowered weight on squats'"
                   {...register('notes')}
+                  name="notes"
                   />
               </div>
             </div>
@@ -183,23 +176,23 @@ export function LogWorkoutForm({ memberId }: LogWorkoutFormProps) {
               {fields.map((field, index) => (
                 <div key={field.id} className="grid grid-cols-12 gap-2 items-end p-3 bg-muted/50 rounded-lg">
                   <div className="col-span-12 sm:col-span-4 space-y-1">
-                     <Label htmlFor={`exercises.${index}.name`} className="text-xs">Exercise Name</Label>
-                     <Input {...register(`exercises.${index}.name`)} placeholder="e.g., Bench Press" />
+                     <Label htmlFor={`exercises[${index}].name`} className="text-xs">Exercise Name</Label>
+                     <Input {...register(`exercises.${index}.name`)} name={`exercises[${index}].name`} placeholder="e.g., Bench Press" />
                   </div>
                   <div className="col-span-4 sm:col-span-2 space-y-1">
-                     <Label htmlFor={`exercises.${index}.sets`} className="text-xs">Sets</Label>
-                     <Input type="number" {...register(`exercises.${index}.sets`)} placeholder="Sets" />
+                     <Label htmlFor={`exercises-sets-${index}`} className="text-xs">Sets</Label>
+                     <Input type="number" {...register(`exercises.${index}.sets`)} name={`exercises-sets-${index}`} placeholder="Sets" />
                   </div>
                   <div className="col-span-4 sm:col-span-2 space-y-1">
-                    <Label htmlFor={`exercises.${index}.reps`} className="text-xs">Reps</Label>
-                    <Input type="number" {...register(`exercises.${index}.reps`)} placeholder="Reps" />
+                    <Label htmlFor={`exercises-reps-${index}`} className="text-xs">Reps</Label>
+                    <Input type="number" {...register(`exercises.${index}.reps`)} name={`exercises-reps-${index}`} placeholder="Reps" />
                   </div>
                    <div className="col-span-4 sm:col-span-2 space-y-1">
-                    <Label htmlFor={`exercises.${index}.weight`} className="text-xs">Weight (kg)</Label>
-                    <Input type="number" step="0.5" {...register(`exercises.${index}.weight`)} placeholder="Weight" />
+                    <Label htmlFor={`exercises-weight-${index}`} className="text-xs">Weight (kg)</Label>
+                    <Input type="number" step="0.5" {...register(`exercises.${index}.weight`)} name={`exercises-weight-${index}`} placeholder="Weight" />
                   </div>
                   <div className="col-span-12 sm:col-span-2 flex justify-end">
-                    <Button variant="ghost" size="icon" onClick={() => remove(index)}>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
