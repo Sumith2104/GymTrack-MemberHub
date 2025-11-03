@@ -76,11 +76,11 @@ export type WorkoutExercise = {
 };
 
 export type Workout = {
-    id?: string; // uuid
+    id: string; // uuid
     member_id: string; // FK to members.id
     date: string; // date
     notes: string | null;
-    created_at?: string;
+    created_at: string;
     exercises: WorkoutExercise[];
 };
 
@@ -91,6 +91,13 @@ export type BodyWeightLog = {
     weight: number;
     created_at: string;
 };
+
+export type PersonalRecord = {
+    exercise: string;
+    maxWeight: number;
+    estimatedOneRepMax: number;
+    date: string;
+}
 
 export const ChatMessageSchema = z.object({
   role: z.enum(['user', 'model']),

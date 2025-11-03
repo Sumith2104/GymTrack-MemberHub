@@ -3,10 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Weight, Dumbbell, BarChart3, TrendingUp, LineChart } from "lucide-react";
 import { LogWorkoutForm } from "@/components/me/log-workout-form";
-import { getMemberProfile } from '@/lib/data';
+import { getMemberProfile, getMemberWorkouts, getMemberBodyWeightLogs, calculatePersonalRecords } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, UserSearch } from "lucide-react";
 import Link from 'next/link';
+import { WorkoutLogTable } from "@/components/me/workout-log-table";
+import { BodyWeightTracker } from "@/components/me/body-weight-tracker";
+import { PersonalRecordsList } from "@/components/me/personal-records-list";
+import { WorkoutOverview } from "@/components/me/workout-overview";
 
 export default async function WorkoutTrackingPage({
   searchParams,
@@ -46,10 +50,14 @@ export default async function WorkoutTrackingPage({
       </div>
     );
   }
+  
+  const workouts = await getMemberWorkouts(member.id);
+  const bodyWeightLogs = await getMemberBodyWeightLogs(member.id);
+  const personalRecords = calculatePersonalRecords(workouts);
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap gap-4 justify-between items-center">
         <h1 className="text-3xl font-bold flex items-center gap-3">
             <Weight className="h-8 w-8 text-primary" />
             Workout Tracking
@@ -82,18 +90,11 @@ export default async function WorkoutTrackingPage({
         </TabsList>
         
         <TabsContent value="overview">
-            <Card>
-                <CardHeader>
-                <CardTitle>Workout Overview</CardTitle>
-                <CardDescription>
-                    Analytics and summary of your workout progress. 
-                    Implementation is pending.
-                </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                    <p className="text-muted-foreground">Charts and stats will be displayed here.</p>
-                </CardContent>
-            </Card>
+            <WorkoutOverview
+              workouts={workouts}
+              bodyWeightLogs={bodyWeightLogs}
+              personalRecords={personalRecords}
+            />
         </TabsContent>
 
         <TabsContent value="log">
@@ -102,28 +103,16 @@ export default async function WorkoutTrackingPage({
               <CardTitle>Workout Log</CardTitle>
               <CardDescription>
                 A detailed history of your logged workout sessions.
-                Implementation is pending.
               </CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-muted-foreground">A table of your past workouts will be shown here.</p>
+                <WorkoutLogTable workouts={workouts} />
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="weight">
-          <Card>
-            <CardHeader>
-              <CardTitle>Body Weight Tracker</CardTitle>
-              <CardDescription>
-                Monitor your body weight changes over time.
-                Implementation is pending.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <p className="text-muted-foreground">A chart of your weight log and an input form will be available here.</p>
-            </CardContent>
-          </Card>
+           <BodyWeightTracker initialLogs={bodyWeightLogs} memberId={member.id} />
         </TabsContent>
 
         <TabsContent value="prs">
@@ -131,12 +120,11 @@ export default async function WorkoutTrackingPage({
             <CardHeader>
               <CardTitle>Personal Records</CardTitle>
               <CardDescription>
-                Your best lifts and performance milestones.
-                Implementation is pending.
+                Your best lifts and performance milestones, with estimated 1-Rep Max (1RM).
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">A list of your personal records for major lifts will be displayed here.</p>
+              <PersonalRecordsList records={personalRecords} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -145,3 +133,4 @@ export default async function WorkoutTrackingPage({
     </div>
   );
 }
+

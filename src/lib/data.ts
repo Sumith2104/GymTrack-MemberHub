@@ -1,7 +1,7 @@
 
-import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig, Workout, WorkoutExercise } from './types';
+import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig, Workout, WorkoutExercise, BodyWeightLog, PersonalRecord } from './types';
 import { supabase } from './supabaseClient';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, parseISO } from 'date-fns';
 
 export async function getMemberProfile(email: string, memberDisplayId: string): Promise<Member | null> {
   if (!supabase) {
@@ -357,7 +357,7 @@ export async function getGymSmtpConfig(gymId: string): Promise<SmtpConfig | null
   }
 }
 
-export async function createWorkout(workout: Workout): Promise<{ success: boolean; data?: Workout; error?: string }> {
+export async function createWorkout(workout: Omit<Workout, 'id' | 'created_at' | 'exercises'> & { exercises: Omit<WorkoutExercise, 'id' | 'workout_id' | 'created_at'>[], member_id: string }): Promise<{ success: boolean; data?: Workout; error?: string }> {
   if (!supabase) {
     return { success: false, error: 'Database connection not available.' };
   }
@@ -394,4 +394,95 @@ export async function updateProfilePicture(memberUUID: string, profileUrl: strin
   }
 
   return { success: true };
+}
+
+
+export async function getMemberWorkouts(memberId: string): Promise<Workout[]> {
+  if (!supabase) return [];
+  const { data: workouts, error: workoutsError } = await supabase
+    .from('workouts')
+    .select('*, workout_exercises(*)')
+    .eq('member_id', memberId)
+    .order('date', { ascending: false });
+
+  if (workoutsError) {
+    console.error('[getMemberWorkouts] Error fetching workouts:', workoutsError);
+    return [];
+  }
+
+  return workouts.map(w => ({
+    ...w,
+    exercises: w.workout_exercises,
+  })) as Workout[];
+}
+
+
+export async function getMemberBodyWeightLogs(memberId: string): Promise<BodyWeightLog[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('body_weight_logs')
+    .select('*')
+    .eq('member_id', memberId)
+    .order('date', { ascending: true });
+  
+  if (error) {
+    console.error('[getMemberBodyWeightLogs] Error fetching body weight logs:', error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function logBodyWeight(memberId: string, weight: number, date: string): Promise<{ success: boolean; data?: BodyWeightLog; error?: string }> {
+  if (!supabase) return { success: false, error: 'Database connection not available.' };
+  
+  const { data, error } = await supabase
+    .from('body_weight_logs')
+    .insert({ member_id: memberId, weight, date })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[logBodyWeight] Error:', error);
+    return { success: false, error: 'Failed to log body weight.' };
+  }
+  return { success: true, data };
+}
+
+// Epley formula for 1-rep max estimation
+const calculateEpley1RM = (weight: number, reps: number): number => {
+    if (reps === 1) return weight;
+    return weight * (1 + reps / 30);
+};
+
+export function calculatePersonalRecords(workouts: Workout[]): PersonalRecord[] {
+    if (!workouts || workouts.length === 0) return [];
+
+    const records: { [key: string]: PersonalRecord } = {};
+
+    workouts.forEach(workout => {
+        workout.exercises.forEach(exercise => {
+            if (exercise.weight <= 0) return;
+
+            const estimated1RM = calculateEpley1RM(exercise.weight, exercise.reps);
+
+            const existingRecord = records[exercise.name.toLowerCase()];
+
+            if (!existingRecord || estimated1RM > existingRecord.estimatedOneRepMax) {
+                records[exercise.name.toLowerCase()] = {
+                    exercise: exercise.name,
+                    maxWeight: exercise.weight,
+                    estimatedOneRepMax: estimated1RM,
+                    date: workout.date,
+                };
+            }
+        });
+    });
+
+    const sortedRecords = Object.values(records).sort((a, b) => {
+        if (a.exercise < b.exercise) return -1;
+        if (a.exercise > b.exercise) return 1;
+        return 0;
+    });
+
+    return sortedRecords;
 }

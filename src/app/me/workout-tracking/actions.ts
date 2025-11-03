@@ -2,8 +2,8 @@
 'use server';
 
 import { z } from 'zod';
-import { createWorkout } from '@/lib/data';
-import type { Workout } from '@/lib/types';
+import { createWorkout, logBodyWeight } from '@/lib/data';
+import type { Workout, BodyWeightLog } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
 const exerciseSchema = z.object({
@@ -67,7 +67,7 @@ export async function logWorkoutAction(
   }
 
   try {
-    const newWorkout: Workout = {
+    const newWorkout: Omit<Workout, 'id'|'created_at'> = {
       member_id: validation.data.memberId,
       date: new Date(validation.data.date).toISOString(),
       notes: validation.data.notes || null,
@@ -85,5 +85,56 @@ export async function logWorkoutAction(
   } catch (error) {
     console.error('[logWorkoutAction] Error:', error);
     return { success: false, message: 'An unexpected server error occurred.' };
+  }
+}
+
+const bodyWeightSchema = z.object({
+  memberId: z.string().uuid(),
+  weight: z.coerce.number().positive("Weight must be a positive number."),
+  date: z.string().refine((d) => !isNaN(Date.parse(d)), "Invalid date"),
+});
+
+export interface LogWeightState {
+  success: boolean;
+  message: string;
+  data?: BodyWeightLog;
+  errors?: {
+    weight?: string;
+  };
+}
+
+export async function logWeightAction(
+  currentState: LogWeightState,
+  formData: FormData
+): Promise<LogWeightState> {
+  const rawData = {
+    memberId: formData.get('memberId'),
+    weight: formData.get('weight'),
+    date: formData.get('date'),
+  };
+
+  const validation = bodyWeightSchema.safeParse(rawData);
+
+  if (!validation.success) {
+    return {
+      success: false,
+      message: 'Invalid input.',
+      errors: validation.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const result = await logBodyWeight(
+      validation.data.memberId,
+      validation.data.weight,
+      validation.data.date
+    );
+    if (!result.success) {
+      return { success: false, message: result.error || 'Database error.' };
+    }
+    revalidatePath('/me/workout-tracking');
+    return { success: true, message: 'Weight logged!', data: result.data };
+  } catch (error) {
+    return { success: false, message: 'An unexpected error occurred.' };
   }
 }
