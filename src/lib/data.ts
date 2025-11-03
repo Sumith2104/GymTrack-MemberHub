@@ -361,45 +361,25 @@ export async function createWorkout(workout: Workout): Promise<{ success: boolea
   if (!supabase) {
     return { success: false, error: 'Database connection not available.' };
   }
+  
+  // This now calls a Supabase RPC function 'create_workout_with_exercises'
+  // which handles the transaction on the database side.
+  const { data, error } = await supabase
+    .rpc('create_workout_with_exercises', {
+      p_member_id: workout.member_id,
+      p_date: workout.date,
+      p_notes: workout.notes,
+      p_exercises: workout.exercises,
+    });
 
-  const { exercises, ...workoutDetails } = workout;
-
-  // Insert the main workout record
-  const { data: workoutData, error: workoutError } = await supabase
-    .from('workouts')
-    .insert(workoutDetails)
-    .select()
-    .single();
-
-  if (workoutError) {
-    console.error('[createWorkout] Error inserting workout:', workoutError);
-    return { success: false, error: 'Failed to save workout session.' };
+  if (error) {
+    console.error('[createWorkout RPC] Error:', error);
+    return { success: false, error: `Failed to save workout session: ${error.message}` };
   }
 
-  if (!workoutData) {
-    return { success: false, error: 'Failed to get workout ID after creation.' };
-  }
-
-  // Add the workout_id to each exercise
-  const exercisesToInsert = exercises.map(ex => ({
-    ...ex,
-    workout_id: workoutData.id,
-  }));
-
-  // Insert all exercises
-  const { data: exercisesData, error: exercisesError } = await supabase
-    .from('workout_exercises')
-    .insert(exercisesToInsert)
-    .select();
-
-  if (exercisesError) {
-    console.error('[createWorkout] Error inserting exercises:', exercisesError);
-    // Optional: Attempt to delete the orphaned workout record for consistency
-    await supabase.from('workouts').delete().eq('id', workoutData.id);
-    return { success: false, error: 'Failed to save workout exercises.' };
-  }
-
-  return { success: true, data: { ...workoutData, exercises: exercisesData } };
+  // The RPC function should return the newly created workout record.
+  // We don't have the full exercise details here, but the main goal is confirmation.
+  return { success: true, data: data as Workout };
 }
 
 export async function updateProfilePicture(memberUUID: string, profileUrl: string): Promise<{ success: boolean; error?: string; }> {
