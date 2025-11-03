@@ -23,12 +23,7 @@ Your goal is to provide helpful, safe, and encouraging advice on fitness, nutrit
 
 Conversation History:
 {{#each input}}
-{{#if (eq role 'user')}}
-User: {{content}}
-{{/if}}
-{{#if (eq role 'model')}}
-Assistant: {{content}}
-{{/if}}
+{{role}}: {{content}}
 {{/each}}
 
 Assistant:
