@@ -367,9 +367,8 @@ export async function createWorkout(workout: Workout): Promise<{ success: boolea
   const { data, error } = await supabase
     .rpc('create_workout_with_exercises', {
       p_date: workout.date,
-      p_exercises: workout.exercises,
-      p_member_id: workout.member_id,
       p_notes: workout.notes,
+      p_exercises: workout.exercises,
     });
 
   if (error) {
