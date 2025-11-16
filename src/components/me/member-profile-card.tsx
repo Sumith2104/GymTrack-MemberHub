@@ -133,7 +133,7 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
           {member.member_id && (
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="default" size="sm">
                   <QrCode className="mr-2 h-4 w-4" />
                   Show ID Card
                 </Button>
