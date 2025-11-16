@@ -95,8 +95,8 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
           <Avatar className="h-20 w-20">
             <AvatarFallback className="text-2xl font-semibold">{getInitials(member.name)}</AvatarFallback>
           </Avatar>
-          {streak > 0 && (
-            <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-destructive text-destructive-foreground">
+          {typeof streak === 'number' && (
+            <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground">
               <span className="text-sm font-bold">{streak}</span>
             </div>
           )}
@@ -127,7 +127,7 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
         <DetailItem icon={Fingerprint} label="Membership Type" value={member.membership_type} />
         <DetailItem icon={CalendarClock} label="Expiry Date" value={formattedExpiryDate === null ? 'Loading...' : formattedExpiryDate} />
         {member.plan_price && <DetailItem icon={CreditCard} label="Current Plan Price" value={`₹${member.plan_price}`} />}
-        {streak > 0 && (
+        {typeof streak === 'number' && (
             <div className="flex items-start space-x-3">
                  <Flame className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
                 <div>
