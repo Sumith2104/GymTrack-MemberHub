@@ -435,7 +435,6 @@ export async function getMemberBodyWeightLogs(memberId: string): Promise<BodyWei
 }
 
 export async function logBodyWeight(memberId: string, weight: number, date: string): Promise<{ success: boolean; data?: BodyWeightLog; error?: string }> {
-  // This function is now designed to run on the server, where SERVICE_ROLE_KEY is available.
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -445,16 +444,18 @@ export async function logBodyWeight(memberId: string, weight: number, date: stri
     return { success: false, error: errorMessage };
   }
   
-  // Create a temporary admin client to bypass RLS for this server-side insertion
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
   const { data, error } = await supabaseAdmin
     .from('body_weight_logs')
-    .insert({
-      member_id: memberId,
-      weight: weight,
-      date: date,
-    })
+    .upsert(
+      {
+        member_id: memberId,
+        weight: weight,
+        date: date,
+      },
+      { onConflict: 'member_id, date' }
+    )
     .select()
     .single();
 
