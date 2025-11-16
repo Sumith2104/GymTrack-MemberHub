@@ -91,9 +91,16 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 pb-4">
-        <Avatar className="h-20 w-20">
-          <AvatarFallback className="text-2xl font-semibold">{getInitials(member.name)}</AvatarFallback>
-        </Avatar>
+        <div className="relative">
+          <Avatar className="h-20 w-20">
+            <AvatarFallback className="text-2xl font-semibold">{getInitials(member.name)}</AvatarFallback>
+          </Avatar>
+          {streak > 0 && (
+            <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-destructive text-destructive-foreground">
+              <span className="text-sm font-bold">{streak}</span>
+            </div>
+          )}
+        </div>
         <div className="flex-1 text-center sm:text-left">
           <CardTitle className="text-3xl font-headline">{member.name}</CardTitle>
           <CardDescription className="text-lg">
