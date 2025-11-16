@@ -22,7 +22,7 @@ export type Member = {
 
 export type Checkin = {
   id: string; // uuid
-  member_table_id: string; // uuid (foreign key to members.id)
+  member_id: string; // text (user-facing member_id)
   check_in_time: string; // timestamptz (ISO string)
   check_out_time: string | null; // timestamptz (ISO string) or null
   created_at: string; // timestamptz (ISO string)

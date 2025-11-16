@@ -108,31 +108,11 @@ export async function getMemberCheckins(memberDisplayId: string): Promise<Checki
     console.warn("[getMemberCheckins] Supabase client is not initialized. Cannot fetch real check-in data.");
     return [];
   }
-  
-  const memberIdUpper = memberDisplayId.toUpperCase();
-
-  const { data: memberData, error: memberError } = await supabase
-    .from('members')
-    .select('id') 
-    .ilike('member_id', memberIdUpper) 
-    .single();
-
-  if (memberError) {
-    if (memberError.code !== 'PGRST116') {
-      console.warn(`[getMemberCheckins] Error fetching member UUID for member_id ${memberIdUpper}:`, memberError.message);
-    }
-    return [];
-  }
-  if (!memberData) {
-    return [];
-  }
-
-  const memberUUID = memberData.id;
 
   const { data: checkinsData, error: checkinsError } = await supabase
     .from('check_ins') 
     .select('*') 
-    .eq('member_table_id', memberUUID) 
+    .ilike('member_id', memberDisplayId) 
     .order('check_in_time', { ascending: false });
 
   if (checkinsError) {

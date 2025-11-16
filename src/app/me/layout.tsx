@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import { MemberHubHeader } from '@/components/me/member-hub-header';
 import { Suspense } from 'react';
+import { CheckinNotificationListener } from '@/components/me/checkin-notification-listener';
 
 export const metadata: Metadata = {
   title: 'GymTrack Lite - Member Hub',
@@ -21,6 +22,7 @@ export default function MemberHubLayout({
     <div className="flex min-h-screen flex-col">
       <Suspense fallback={<HeaderFallback />}>
         <MemberHubHeader />
+        <CheckinNotificationListener />
       </Suspense>
       <main className="flex-1 p-4 sm:p-6 bg-background">
         {children}
