@@ -22,8 +22,8 @@ export default function MemberHubLayout({
     <div className="flex min-h-screen flex-col">
       <Suspense fallback={<HeaderFallback />}>
         <MemberHubHeader />
-        <CheckinNotificationListener />
       </Suspense>
+      <CheckinNotificationListener />
       <main className="flex-1 p-4 sm:p-6 bg-background">
         {children}
       </main>

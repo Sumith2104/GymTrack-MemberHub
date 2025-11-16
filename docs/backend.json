@@ -163,6 +163,22 @@
     ]
   },
   "firestore": {
+    "collections": [
+      {
+        "name": "members",
+        "schema": {
+          "$ref": "#/entities/Member"
+        },
+        "description": "Stores member profiles."
+      },
+      {
+        "name": "announcements",
+        "schema": {
+          "$ref": "#/entities/Announcement"
+        },
+        "description": "Stores global gym announcements."
+      }
+    ],
     "structure": [
       {
         "path": "/members/{memberId}",
@@ -171,13 +187,7 @@
           "schema": {
             "$ref": "#/backend/entities/Member"
           },
-          "description": "Stores member profiles, with 'memberId' as the document ID. Includes all member details like name, email, and membership type.",
-          "params": [
-            {
-              "name": "memberId",
-              "description": "The unique identifier for the member."
-            }
-          ]
+          "description": "Stores member profiles, with 'memberId' as the document ID. Includes all member details like name, email, and membership type."
         }
       },
       {
@@ -187,17 +197,7 @@
           "schema": {
             "$ref": "#/backend/entities/CheckIn"
           },
-          "description": "Stores check-in records for each user, with 'userId' representing the member and 'checkInId' as the check-in document ID.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user (member)."
-            },
-            {
-              "name": "checkInId",
-              "description": "The unique identifier for the check-in record."
-            }
-          ]
+          "description": "Stores check-in records for each user, with 'userId' representing the member and 'checkInId' as the check-in document ID."
         }
       },
       {
@@ -207,13 +207,7 @@
           "schema": {
             "$ref": "#/backend/entities/Announcement"
           },
-          "description": "Stores global gym announcements, accessible to all members.",
-          "params": [
-            {
-              "name": "announcementId",
-              "description": "The unique identifier for the announcement."
-            }
-          ]
+          "description": "Stores global gym announcements, accessible to all members."
         }
       },
       {
@@ -223,20 +217,9 @@
           "schema": {
             "$ref": "#/backend/entities/Notification"
           },
-          "description": "Stores notifications for each user, related to check-ins and announcements.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user (member)."
-            },
-            {
-              "name": "notificationId",
-              "description": "The unique identifier for the notification."
-            }
-          ]
+          "description": "Stores notifications for each user, related to check-ins and announcements."
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed to support the gym check-in notification system, focusing on authorization independence and efficient data retrieval for the GymTrack Lite application. Path-based ownership is used for private user data (check-ins and notifications), while a global collection stores announcements.  This design eliminates the need for complex `get()` calls in security rules. Specifically, user-specific check-in and notification data are stored under `/users/{userId}`, ensuring that only the authenticated user can access their own data. Announcements are stored in a global collection, `/announcements`, enabling easy retrieval for all members. This segregation supports secure listing operations (QAPs) as rules can be applied at the collection level."
+    ]
   }
 }

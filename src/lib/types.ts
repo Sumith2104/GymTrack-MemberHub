@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export type Member = {
@@ -22,10 +23,8 @@ export type Member = {
 
 export type Checkin = {
   id: string; // uuid
-  member_table_id: string; // uuid, FK to members.id
-  check_in_time: string; // timestamptz (ISO string)
-  check_out_time: string | null; // timestamptz (ISO string) or null
-  created_at: string; // timestamptz (ISO string)
+  memberId: string; // uuid, FK to members.id
+  checkInTime: string; // timestamptz (ISO string)
 };
 
 export type Announcement = {
