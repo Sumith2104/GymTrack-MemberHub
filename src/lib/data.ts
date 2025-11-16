@@ -3,6 +3,7 @@
 import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig, Workout, WorkoutExercise, BodyWeightLog, PersonalRecord } from './types';
 import { supabase } from './supabaseClient';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
+import { createClient } from '@supabase/supabase-js';
 
 export async function getMemberProfile(email: string, memberDisplayId: string): Promise<Member | null> {
   if (!supabase) {
@@ -434,9 +435,20 @@ export async function getMemberBodyWeightLogs(memberId: string): Promise<BodyWei
 }
 
 export async function logBodyWeight(memberId: string, weight: number, date: string): Promise<{ success: boolean; data?: BodyWeightLog; error?: string }> {
-  if (!supabase) return { success: false, error: 'Database connection not available.' };
+  // This function is now designed to run on the server, where SERVICE_ROLE_KEY is available.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    const errorMessage = 'Server is not configured for administrative database operations.';
+    console.error(`[logBodyWeight] ${errorMessage}`);
+    return { success: false, error: errorMessage };
+  }
   
-  const { data, error } = await supabase
+  // Create a temporary admin client to bypass RLS for this server-side insertion
+  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+  const { data, error } = await supabaseAdmin
     .from('body_weight_logs')
     .insert({
       member_id: memberId,
@@ -447,7 +459,7 @@ export async function logBodyWeight(memberId: string, weight: number, date: stri
     .single();
 
   if (error) {
-    console.error('[logBodyWeight] Error:', error);
+    console.error('[logBodyWeight] Supabase admin error:', error);
     return { success: false, error: `Database error: ${error.message}` };
   }
   
@@ -537,3 +549,6 @@ export function calculateWorkoutStreak(checkins: Checkin[]): number {
   return currentStreak;
 }
 
+
+
+    
