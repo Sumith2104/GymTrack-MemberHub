@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { Member } from '@/lib/types';
@@ -16,12 +17,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { formatDate } from '@/lib/utils';
-import { AtSign, Cake, CalendarDays, Fingerprint, Phone, CreditCard, CalendarClock, QrCode, RefreshCw } from 'lucide-react';
+import { AtSign, Cake, CalendarDays, Fingerprint, Phone, CreditCard, CalendarClock, QrCode, RefreshCw, Flame } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useState, useEffect } from 'react';
 
 interface MemberProfileCardProps {
   member: Member;
+  streak: number;
 }
 
 const DetailItem: React.FC<{ icon: React.ElementType, label: string, value: string | number | null | undefined }> = ({ icon: Icon, label, value }) => (
@@ -34,7 +36,7 @@ const DetailItem: React.FC<{ icon: React.ElementType, label: string, value: stri
   </div>
 );
 
-export function MemberProfileCard({ member }: MemberProfileCardProps) {
+export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
   const [formattedJoinDate, setFormattedJoinDate] = useState<string | null>(null);
   const [formattedExpiryDate, setFormattedExpiryDate] = useState<string | null>(null);
   const [isExpiryToday, setIsExpiryToday] = useState(false);
@@ -88,11 +90,11 @@ export function MemberProfileCard({ member }: MemberProfileCardProps) {
   
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center space-x-4 pb-4">
+      <CardHeader className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 pb-4">
         <Avatar className="h-20 w-20">
           <AvatarFallback className="text-2xl font-semibold">{getInitials(member.name)}</AvatarFallback>
         </Avatar>
-        <div>
+        <div className="flex-1 text-center sm:text-left">
           <CardTitle className="text-3xl font-headline">{member.name}</CardTitle>
           <CardDescription className="text-lg">
             Member ID: {member.member_id}
@@ -109,6 +111,13 @@ export function MemberProfileCard({ member }: MemberProfileCardProps) {
             {member.membership_status}
           </Badge>
         </div>
+        {streak > 0 && (
+            <div className="flex flex-col items-center gap-1 p-4 bg-amber-400/10 border border-amber-400/20 rounded-lg text-amber-500">
+                <Flame className="h-8 w-8"/>
+                <div className="text-3xl font-bold">{streak}</div>
+                <div className="text-sm font-medium tracking-wider">DAY STREAK</div>
+            </div>
+        )}
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pt-4">
         <DetailItem icon={AtSign} label="Email" value={member.email} />

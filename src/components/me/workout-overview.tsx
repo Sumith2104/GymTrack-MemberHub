@@ -1,15 +1,17 @@
 
+
 "use client";
 
 import type { Workout, BodyWeightLog, PersonalRecord } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dumbbell, Weight, Trophy } from 'lucide-react';
+import { Dumbbell, Weight, Trophy, Flame } from 'lucide-react';
 import { useMemo } from 'react';
 
 interface WorkoutOverviewProps {
     workouts: Workout[];
     bodyWeightLogs: BodyWeightLog[];
     personalRecords: PersonalRecord[];
+    streak: number;
 }
 
 interface StatCardProps {
@@ -32,7 +34,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, descripti
     </Card>
 );
 
-export function WorkoutOverview({ workouts, bodyWeightLogs, personalRecords }: WorkoutOverviewProps) {
+export function WorkoutOverview({ workouts, bodyWeightLogs, personalRecords, streak }: WorkoutOverviewProps) {
     const totalWorkouts = workouts.length;
 
     const latestWeight = useMemo(() => {
@@ -47,7 +49,7 @@ export function WorkoutOverview({ workouts, bodyWeightLogs, personalRecords }: W
     }, [personalRecords]);
 
     return (
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
                 title="Total Workouts"
                 value={totalWorkouts.toString()}
@@ -65,6 +67,12 @@ export function WorkoutOverview({ workouts, bodyWeightLogs, personalRecords }: W
                 value={topPR}
                 icon={Trophy}
                 description="Your best lift by estimated 1RM."
+            />
+             <StatCard
+                title="Workout Streak"
+                value={`${streak} Day${streak === 1 ? '' : 's'}`}
+                icon={Flame}
+                description="Consecutive days with a check-in."
             />
         </div>
     );

@@ -1,6 +1,7 @@
 
+
 import { MemberProfileCard } from '@/components/me/member-profile-card';
-import { getMemberProfile } from '@/lib/data';
+import { getMemberProfile, getMemberCheckins, calculateWorkoutStreak } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal, Info, UserSearch } from "lucide-react";
 import Link from 'next/link';
@@ -45,10 +46,13 @@ export default async function DashboardPage({
       </div>
     );
   }
+  
+  const checkins = await getMemberCheckins(member.member_id);
+  const streak = calculateWorkoutStreak(checkins);
 
   return (
     <div className="space-y-6">
-      <MemberProfileCard member={member} />
+      <MemberProfileCard member={member} streak={streak} />
     </div>
   );
 }

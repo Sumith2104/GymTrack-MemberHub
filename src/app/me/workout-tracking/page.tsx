@@ -1,9 +1,10 @@
 
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Weight, Dumbbell, BarChart3, TrendingUp, LineChart } from "lucide-react";
 import { LogWorkoutForm } from "@/components/me/log-workout-form";
-import { getMemberProfile, getMemberWorkouts, getMemberBodyWeightLogs, calculatePersonalRecords } from '@/lib/data';
+import { getMemberProfile, getMemberWorkouts, getMemberBodyWeightLogs, calculatePersonalRecords, getMemberCheckins, calculateWorkoutStreak } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, UserSearch } from "lucide-react";
 import Link from 'next/link';
@@ -54,6 +55,8 @@ export default async function WorkoutTrackingPage({
   const workouts = await getMemberWorkouts(member.id);
   const bodyWeightLogs = await getMemberBodyWeightLogs(member.id);
   const personalRecords = calculatePersonalRecords(workouts);
+  const checkins = await getMemberCheckins(member.member_id);
+  const streak = calculateWorkoutStreak(checkins);
 
   return (
     <div className="space-y-6">
@@ -94,6 +97,7 @@ export default async function WorkoutTrackingPage({
               workouts={workouts}
               bodyWeightLogs={bodyWeightLogs}
               personalRecords={personalRecords}
+              streak={streak}
             />
         </TabsContent>
 
@@ -133,4 +137,3 @@ export default async function WorkoutTrackingPage({
     </div>
   );
 }
-

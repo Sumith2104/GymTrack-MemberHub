@@ -1,7 +1,8 @@
 
+
 import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig, Workout, WorkoutExercise, BodyWeightLog, PersonalRecord } from './types';
 import { supabase } from './supabaseClient';
-import { differenceInDays, parseISO } from 'date-fns';
+import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 
 export async function getMemberProfile(email: string, memberDisplayId: string): Promise<Member | null> {
   if (!supabase) {
@@ -485,4 +486,47 @@ export function calculatePersonalRecords(workouts: Workout[]): PersonalRecord[] 
     });
 
     return sortedRecords;
+}
+
+export function calculateWorkoutStreak(checkins: Checkin[]): number {
+  if (checkins.length === 0) return 0;
+
+  const sortedCheckinDates = checkins
+    .map(c => startOfDay(parseISO(c.check_in_time)))
+    .filter((date, index, self) => 
+        index === self.findIndex(d => d.getTime() === date.getTime())
+    )
+    .sort((a, b) => b.getTime() - a.getTime());
+
+  if (sortedCheckinDates.length === 0) return 0;
+  
+  const today = startOfDay(new Date());
+  const yesterday = startOfDay(new Date());
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const mostRecentCheckin = sortedCheckinDates[0];
+
+  if (mostRecentCheckin.getTime() !== today.getTime() && mostRecentCheckin.getTime() !== yesterday.getTime()) {
+    return 0;
+  }
+  
+  let currentStreak = 0;
+  if (mostRecentCheckin.getTime() === today.getTime() || mostRecentCheckin.getTime() === yesterday.getTime()) {
+    currentStreak = 1;
+  } else {
+    return 0;
+  }
+  
+  for (let i = 0; i < sortedCheckinDates.length - 1; i++) {
+    const currentDay = sortedCheckinDates[i];
+    const previousDay = sortedCheckinDates[i+1];
+    
+    if (differenceInDays(currentDay, previousDay) === 1) {
+      currentStreak++;
+    } else {
+      break;
+    }
+  }
+  
+  return currentStreak;
 }
