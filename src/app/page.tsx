@@ -9,21 +9,21 @@ import { HomePageHeader } from '@/components/home-page-header';
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams?: { email?: string; memberId?: string; message?: string };
+  searchParams?: { email?: string; memberId?: string; message?: string; error?: string };
 }) {
   const emailParam = searchParams?.email;
   const memberIdParam = searchParams?.memberId;
-  let displayError: string | undefined = undefined;
+  let displayError = searchParams?.error || searchParams?.message;
 
   if (emailParam && memberIdParam) {
     const member = await getMemberProfile(emailParam, memberIdParam);
     if (member) {
       redirect(`/me/dashboard?memberId=${encodeURIComponent(member.member_id)}&email=${encodeURIComponent(member.email)}`);
     } else {
-      displayError = 'Invalid email or Member ID. Please check your details and try again.';
+      // If the profile wasn't found, we redirect back to the home page with an error.
+      // This prevents the user from being stuck on a URL with invalid lookup params.
+      redirect(`/?error=${encodeURIComponent('Invalid email or Member ID. Please check your details and try again.')}`);
     }
-  } else if (searchParams?.message) {
-    displayError = searchParams.message;
   }
 
   return (
@@ -41,17 +41,7 @@ export default async function HomePage({
             </Alert>
           )}
 
-          {emailParam && memberIdParam && !displayError && (
-             <Alert>
-               <Search className="h-4 w-4" />
-               <AlertTitle>Verifying Details</AlertTitle>
-               <AlertDescription>
-                 Attempting to access profile...
-               </AlertDescription>
-             </Alert>
-           )}
-          
-          {!emailParam && !memberIdParam && !displayError && (
+          {!displayError && (
             <Alert>
                 <Info className="h-4 w-4" />
                 <AlertTitle>Welcome to Member Hub</AlertTitle>
