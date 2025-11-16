@@ -1,0 +1,242 @@
+{
+  "entities": {
+    "Member": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Member",
+      "type": "object",
+      "description": "Represents a gym member.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the member."
+        },
+        "name": {
+          "type": "string",
+          "description": "The member's full name."
+        },
+        "memberId": {
+          "type": "string",
+          "description": "The member's unique ID within the gym system."
+        },
+        "email": {
+          "type": "string",
+          "description": "The member's email address.",
+          "format": "email"
+        },
+        "age": {
+          "type": "number",
+          "description": "The member's age in years."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The member's phone number."
+        },
+        "joinDate": {
+          "type": "string",
+          "description": "The date when the member joined the gym.",
+          "format": "date-time"
+        },
+        "membershipType": {
+          "type": "string",
+          "description": "The type of membership the member has (e.g., Basic, Premium)."
+        },
+        "status": {
+          "type": "string",
+          "description": "The member's current status (e.g., Active, Inactive)."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "memberId",
+        "email",
+        "age",
+        "phone",
+        "joinDate",
+        "membershipType",
+        "status"
+      ]
+    },
+    "CheckIn": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CheckIn",
+      "type": "object",
+      "description": "Represents a member's check-in at the gym.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the check-in record."
+        },
+        "memberId": {
+          "type": "string",
+          "description": "Reference to Member. (Relationship: Member 1:N CheckIn)"
+        },
+        "checkInTime": {
+          "type": "string",
+          "description": "The date and time when the member checked in.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "memberId",
+        "checkInTime"
+      ]
+    },
+    "Announcement": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Announcement",
+      "type": "object",
+      "description": "Represents a gym announcement.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the announcement."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the announcement."
+        },
+        "content": {
+          "type": "string",
+          "description": "The content of the announcement."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time when the announcement was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "content",
+        "createdAt"
+      ]
+    },
+    "Notification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Notification",
+      "type": "object",
+      "description": "Represents a notification sent to a member.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the notification."
+        },
+        "memberId": {
+          "type": "string",
+          "description": "Reference to Member. (Relationship: Member 1:N Notification)"
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the notification."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "The date and time when the notification was sent.",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of notification (e.g., 'check-in', 'announcement')."
+        },
+        "read": {
+          "type": "boolean",
+          "description": "Indicates whether the notification has been read by the member."
+        }
+      },
+      "required": [
+        "id",
+        "memberId",
+        "message",
+        "timestamp",
+        "type",
+        "read"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/members/{memberId}",
+        "definition": {
+          "entityName": "Member",
+          "schema": {
+            "$ref": "#/backend/entities/Member"
+          },
+          "description": "Stores member profiles, with 'memberId' as the document ID. Includes all member details like name, email, and membership type.",
+          "params": [
+            {
+              "name": "memberId",
+              "description": "The unique identifier for the member."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/checkIns/{checkInId}",
+        "definition": {
+          "entityName": "CheckIn",
+          "schema": {
+            "$ref": "#/backend/entities/CheckIn"
+          },
+          "description": "Stores check-in records for each user, with 'userId' representing the member and 'checkInId' as the check-in document ID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (member)."
+            },
+            {
+              "name": "checkInId",
+              "description": "The unique identifier for the check-in record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/announcements/{announcementId}",
+        "definition": {
+          "entityName": "Announcement",
+          "schema": {
+            "$ref": "#/backend/entities/Announcement"
+          },
+          "description": "Stores global gym announcements, accessible to all members.",
+          "params": [
+            {
+              "name": "announcementId",
+              "description": "The unique identifier for the announcement."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": {
+            "$ref": "#/backend/entities/Notification"
+          },
+          "description": "Stores notifications for each user, related to check-ins and announcements.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (member)."
+            },
+            {
+              "name": "notificationId",
+              "description": "The unique identifier for the notification."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support the gym check-in notification system, focusing on authorization independence and efficient data retrieval for the GymTrack Lite application. Path-based ownership is used for private user data (check-ins and notifications), while a global collection stores announcements.  This design eliminates the need for complex `get()` calls in security rules. Specifically, user-specific check-in and notification data are stored under `/users/{userId}`, ensuring that only the authenticated user can access their own data. Announcements are stored in a global collection, `/announcements`, enabling easy retrieval for all members. This segregation supports secure listing operations (QAPs) as rules can be applied at the collection level."
+  }
+}
