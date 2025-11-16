@@ -109,10 +109,25 @@ export async function getMemberCheckins(memberDisplayId: string): Promise<Checki
     return [];
   }
 
+  // The memberDisplayId from the client is the user-facing member_id from the 'members' table.
+  // We need to fetch the UUID (the 'id' column) from the 'members' table first.
+  const { data: memberData, error: memberError } = await supabase
+    .from('members')
+    .select('id')
+    .ilike('member_id', memberDisplayId)
+    .single();
+
+  if (memberError || !memberData) {
+    console.error(`[getMemberCheckins] Error fetching member UUID for member_id ${memberDisplayId}:`, memberError?.message);
+    return [];
+  }
+
+  const memberUUID = memberData.id;
+
   const { data: checkinsData, error: checkinsError } = await supabase
     .from('check_ins') 
     .select('*') 
-    .ilike('member_id', memberDisplayId) 
+    .eq('member_table_id', memberUUID) 
     .order('check_in_time', { ascending: false });
 
   if (checkinsError) {
@@ -533,3 +548,4 @@ export function calculateWorkoutStreak(checkins: Checkin[]): number {
 
 
     
+

@@ -1,39 +1,60 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCheck } from 'lucide-react';
 import type { Checkin } from '@/lib/types';
 
+async function getMemberUUID(memberDisplayId: string): Promise<string | null> {
+  if (!supabase || !memberDisplayId) return null;
+  const { data, error } = await supabase
+    .from('members')
+    .select('id')
+    .ilike('member_id', memberDisplayId)
+    .single();
+  if (error) {
+    console.error(`[Realtime:getMemberUUID] Error fetching UUID for ${memberDisplayId}:`, error.message);
+    return null;
+  }
+  return data.id;
+}
+
+
 export function CheckinNotificationListener() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const [memberUUID, setMemberUUID] = useState<string | null>(null);
 
   const memberId = searchParams.get('memberId');
-  const email = searchParams.get('email');
 
   useEffect(() => {
-    if (!supabase || !memberId || !email) {
+    if (memberId) {
+      getMemberUUID(memberId).then(setMemberUUID);
+    }
+  }, [memberId]);
+
+
+  useEffect(() => {
+    if (!supabase || !memberUUID) {
       return;
     }
 
     const channel = supabase
-      .channel(`public:check_ins:memberId=eq.${memberId}`)
+      .channel(`public:check_ins:member_table_id=eq.${memberUUID}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'check_ins',
-          filter: `member_id=eq.${memberId}`
+          filter: `member_table_id=eq.${memberUUID}`
         },
         (payload) => {
           const newCheckin = payload.new as Checkin;
           
-          // A simple check to avoid showing toasts for very old, back-dated checkins
           const checkinTime = new Date(newCheckin.check_in_time);
           const now = new Date();
           const timeDiffMinutes = (now.getTime() - checkinTime.getTime()) / (1000 * 60);
@@ -53,7 +74,7 @@ export function CheckinNotificationListener() {
       )
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`[Realtime] Subscribed to check-in notifications for member ${memberId}.`);
+          console.log(`[Realtime] Subscribed to check-in notifications for member UUID ${memberUUID}.`);
         }
         if (status === 'CHANNEL_ERROR') {
           console.error('[Realtime] Channel Error:', err);
@@ -66,7 +87,7 @@ export function CheckinNotificationListener() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [memberId, email, toast]);
+  }, [memberUUID, toast]);
 
   return null; // This component does not render anything
 }
