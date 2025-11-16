@@ -436,23 +436,19 @@ export async function getMemberBodyWeightLogs(memberId: string): Promise<BodyWei
 export async function logBodyWeight(memberId: string, weight: number, date: string): Promise<{ success: boolean; data?: BodyWeightLog; error?: string }> {
   if (!supabase) return { success: false, error: 'Database connection not available.' };
   
-  // Use .rpc() to call a database function that can operate with elevated privileges
   const { data, error } = await supabase
-    .rpc('insert_body_weight_log', {
-      p_member_id: memberId,
-      p_weight: weight,
-      p_date: date
-    });
+    .from('body_weight_logs')
+    .insert({
+      member_id: memberId,
+      weight: weight,
+      date: date,
+    })
+    .select()
+    .single();
 
   if (error) {
-    console.error('[logBodyWeight RPC Call] Error:', error);
+    console.error('[logBodyWeight] Error:', error);
     return { success: false, error: `Database error: ${error.message}` };
-  }
-  
-  // The RPC function is expected to return the inserted row
-  // If data is null or undefined but there's no error, something is wrong with the RPC function itself
-  if (!data) {
-    return { success: false, error: 'Failed to log body weight. The operation returned no data.' };
   }
   
   return { success: true, data: data as BodyWeightLog };
@@ -540,3 +536,4 @@ export function calculateWorkoutStreak(checkins: Checkin[]): number {
   
   return currentStreak;
 }
+
