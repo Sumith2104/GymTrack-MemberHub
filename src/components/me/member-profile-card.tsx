@@ -17,7 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { formatDate } from '@/lib/utils';
-import { AtSign, Cake, CalendarDays, Fingerprint, Phone, CreditCard, CalendarClock, QrCode, RefreshCw, Flame } from 'lucide-react';
+import { AtSign, Cake, CalendarDays, Fingerprint, Phone, CreditCard, CalendarClock, QrCode, RefreshCw } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useState, useEffect } from 'react';
 
@@ -90,36 +90,36 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
   
   return (
     <Card>
-      <CardHeader className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 pb-4">
-        <div className="relative">
-          <Avatar className="h-20 w-20">
-            <AvatarFallback className="text-2xl font-semibold">{getInitials(member.name)}</AvatarFallback>
-          </Avatar>
-          {typeof streak === 'number' && (
-            <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground">
-              <span className="text-sm font-bold">{streak}</span>
+      <CardHeader className="flex flex-row items-center gap-4 p-4">
+        <div className="relative flex-shrink-0">
+            <Avatar className="h-16 w-16 border">
+                <AvatarFallback className="text-xl font-semibold">{getInitials(member.name)}</AvatarFallback>
+            </Avatar>
+             <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground">
+                <span className="text-sm font-bold">{streak}</span>
             </div>
-          )}
         </div>
-        <div className="flex-1 text-center sm:text-left">
-          <CardTitle className="text-3xl font-headline">{member.name}</CardTitle>
-          <CardDescription className="text-lg">
+        <div className="flex-1 space-y-1">
+          <CardTitle className="text-2xl font-bold">{member.name}</CardTitle>
+          <CardDescription>
             Member ID: {member.member_id}
           </CardDescription>
           {member.formatted_gym_id && (
-            <CardDescription className="text-base text-muted-foreground">
+            <CardDescription className="text-muted-foreground">
                 Gym ID: {member.formatted_gym_id}
             </CardDescription>
           )}
-          <Badge 
-            variant={isActiveMember ? 'default' : 'destructive'} 
-            className={`mt-2 ${isActiveMember ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} text-primary-foreground`}
-          >
-            {member.membership_status}
-          </Badge>
+          <div className="pt-1">
+            <Badge 
+                variant={isActiveMember ? 'default' : 'destructive'} 
+                className={`text-xs ${isActiveMember ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} text-white border-transparent`}
+            >
+                {member.membership_status}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 pt-4">
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 pt-4 p-4 md:p-6">
         <DetailItem icon={AtSign} label="Email" value={member.email} />
         <DetailItem icon={Phone} label="Phone" value={member.phone_number} />
         <DetailItem icon={Cake} label="Age" value={member.age?.toString()} />
@@ -127,24 +127,15 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
         <DetailItem icon={Fingerprint} label="Membership Type" value={member.membership_type} />
         <DetailItem icon={CalendarClock} label="Expiry Date" value={formattedExpiryDate === null ? 'Loading...' : formattedExpiryDate} />
         {member.plan_price && <DetailItem icon={CreditCard} label="Current Plan Price" value={`₹${member.plan_price}`} />}
-        {typeof streak === 'number' && (
-            <div className="flex items-start space-x-3">
-                 <Flame className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
-                <div>
-                    <p className="text-sm text-muted-foreground">Current Streak</p>
-                    <p className="font-medium">{streak} Day{streak === 1 ? '' : 's'}</p>
-                </div>
-            </div>
-        )}
       </CardContent>
       {(member.member_id || canRenew) && (
-        <CardFooter className="flex flex-col items-center pt-6 space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
+        <CardFooter className="flex flex-wrap gap-2 p-4 md:p-6 pt-0">
           {member.member_id && (
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" size="sm">
                   <QrCode className="mr-2 h-4 w-4" />
-                  Show Member ID QR Code
+                  Show ID Card
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
@@ -165,7 +156,7 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
             </Dialog>
           )}
           {canRenew && (
-            <Button asChild variant="default">
+            <Button asChild variant="default" size="sm">
               <Link href={`/me/payments?memberId=${encodeURIComponent(member.member_id)}&email=${encodeURIComponent(member.email)}`}>
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Renew Membership
