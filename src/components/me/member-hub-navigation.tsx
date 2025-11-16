@@ -26,10 +26,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 export function MemberHubNavigation() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const auth = useAuth();
   
   const memberId = searchParams.get('memberId');
   const email = searchParams.get('email');
@@ -41,7 +44,8 @@ export function MemberHubNavigation() {
     return basePath;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut(auth);
     router.push('/');
   };
 

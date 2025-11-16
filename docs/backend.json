@@ -158,7 +158,6 @@
   },
   "auth": {
     "providers": [
-      "password",
       "anonymous"
     ]
   },

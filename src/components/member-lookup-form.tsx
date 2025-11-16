@@ -1,37 +1,25 @@
+
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, LogIn, Mail, Shield } from 'lucide-react';
 
-export function MemberLookupForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+interface MemberLookupFormProps {
+  onLookup: (email: string, memberId: string) => void;
+  isSubmitting: boolean;
+}
+
+export function MemberLookupForm({ onLookup, isSubmitting }: MemberLookupFormProps) {
   const [emailInput, setEmailInput] = useState('');
   const [memberIdInput, setMemberIdInput] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    const emailParam = searchParams.get('email');
-    const memberIdParam = searchParams.get('memberId');
-    const messageParam = searchParams.get('message');
-    
-    if ((emailParam && memberIdParam) || messageParam) {
-      setIsSubmitting(false);
-    }
-  }, [searchParams]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (emailInput.trim() && memberIdInput.trim()) {
-      setIsSubmitting(true);
-      router.push(`/?email=${encodeURIComponent(emailInput.trim())}&memberId=${encodeURIComponent(memberIdInput.trim())}`);
-    } else {
-      setIsSubmitting(false);
-      router.push('/?message=Please enter both email and Member ID.');
+      onLookup(emailInput.trim(), memberIdInput.trim());
     }
   };
 

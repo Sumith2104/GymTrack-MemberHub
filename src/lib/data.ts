@@ -1,9 +1,19 @@
 
 
 import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig, Workout, WorkoutExercise, BodyWeightLog, PersonalRecord } from './types';
-import { supabase } from './supabaseClient';
-import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 import { createClient } from '@supabase/supabase-js';
+import { differenceInDays, parseISO, startOfDay } from 'date-fns';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+let supabase: ReturnType<typeof createClient> | null = null;
+if (supabaseUrl && supabaseAnonKey) {
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+} else {
+  console.error("Supabase URL or Anon Key is missing.");
+}
+
 
 export async function getMemberProfile(email: string, memberDisplayId: string): Promise<Member | null> {
   if (!supabase) {
@@ -109,8 +119,6 @@ export async function getMemberCheckins(memberDisplayId: string): Promise<Checki
     return [];
   }
 
-  // The memberDisplayId from the client is the user-facing member_id from the 'members' table.
-  // We need to fetch the UUID (the 'id' column) from the 'members' table first.
   const { data: memberData, error: memberError } = await supabase
     .from('members')
     .select('id')
@@ -548,4 +556,5 @@ export function calculateWorkoutStreak(checkins: Checkin[]): number {
 
 
     
+
 
