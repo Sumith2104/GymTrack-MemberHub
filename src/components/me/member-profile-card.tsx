@@ -129,7 +129,7 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
         {member.plan_price && <DetailItem icon={CreditCard} label="Current Plan Price" value={`₹${member.plan_price}`} />}
       </CardContent>
       {(member.member_id || canRenew) && (
-        <CardFooter className="flex flex-wrap gap-2 p-4 md:p-6 pt-0">
+        <CardFooter className="flex flex-wrap justify-center gap-4 p-4 md:p-6 pt-0">
           {member.member_id && (
             <Dialog>
               <DialogTrigger asChild>
