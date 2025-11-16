@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { z } from 'zod';
@@ -130,11 +131,12 @@ export async function logWeightAction(
       validation.data.date
     );
     if (!result.success) {
-      return { success: false, message: result.error || 'Database error.' };
+      return { success: false, message: result.error || 'An unexpected database error occurred.' };
     }
     revalidatePath('/me/workout-tracking');
     return { success: true, message: 'Weight logged!', data: result.data };
-  } catch (error) {
-    return { success: false, message: 'An unexpected error occurred.' };
+  } catch (error: any) {
+    console.error("[logWeightAction] Catch Error:", error);
+    return { success: false, message: error.message || 'An unexpected server error occurred.' };
   }
 }
