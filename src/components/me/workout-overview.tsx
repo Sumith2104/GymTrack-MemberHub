@@ -39,7 +39,8 @@ export function WorkoutOverview({ workouts, bodyWeightLogs, personalRecords, str
 
     const latestWeight = useMemo(() => {
         if (bodyWeightLogs.length === 0) return "N/A";
-        return `${bodyWeightLogs[bodyWeightLogs.length - 1].weight.toFixed(1)} kg`;
+        const sortedLogs = [...bodyWeightLogs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return `${sortedLogs[0].weight.toFixed(1)} kg`;
     }, [bodyWeightLogs]);
     
     const topPR = useMemo(() => {

@@ -111,15 +111,8 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
             {member.membership_status}
           </Badge>
         </div>
-        {streak > 0 && (
-            <div className="flex flex-col items-center gap-1 p-4 bg-amber-400/10 border border-amber-400/20 rounded-lg text-amber-500">
-                <Flame className="h-8 w-8"/>
-                <div className="text-3xl font-bold">{streak}</div>
-                <div className="text-sm font-medium tracking-wider">DAY STREAK</div>
-            </div>
-        )}
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 pt-4">
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 pt-4">
         <DetailItem icon={AtSign} label="Email" value={member.email} />
         <DetailItem icon={Phone} label="Phone" value={member.phone_number} />
         <DetailItem icon={Cake} label="Age" value={member.age?.toString()} />
@@ -127,6 +120,15 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
         <DetailItem icon={Fingerprint} label="Membership Type" value={member.membership_type} />
         <DetailItem icon={CalendarClock} label="Expiry Date" value={formattedExpiryDate === null ? 'Loading...' : formattedExpiryDate} />
         {member.plan_price && <DetailItem icon={CreditCard} label="Current Plan Price" value={`₹${member.plan_price}`} />}
+        {streak > 0 && (
+            <div className="flex items-start space-x-3">
+                 <Flame className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
+                <div>
+                    <p className="text-sm text-muted-foreground">Current Streak</p>
+                    <p className="font-medium">{streak} Day{streak === 1 ? '' : 's'}</p>
+                </div>
+            </div>
+        )}
       </CardContent>
       {(member.member_id || canRenew) && (
         <CardFooter className="flex flex-col items-center pt-6 space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
