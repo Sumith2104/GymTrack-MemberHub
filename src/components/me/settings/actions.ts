@@ -2,10 +2,19 @@
 'use server';
 
 import { z } from 'zod';
-import { updateMemberEmail, updateMemberProfile } from '@/lib/data';
+import { updateMemberEmail, updateMemberProfile, updateProfilePictureUrl } from '@/lib/data';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { sendOtpEmail } from '@/lib/email';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+let supabase: ReturnType<typeof createClient> | null = null;
+if (supabaseUrl && supabaseAnonKey) {
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+}
 
 
 export interface RequestEmailChangeState {
@@ -155,5 +164,63 @@ export async function updateProfile(
     } catch (error) {
         console.error('[updateProfile] Error:', error);
         return { success: false, message: 'An unexpected server error occurred.' };
+    }
+}
+
+export interface UpdateProfilePictureState {
+    success: boolean;
+    message: string;
+    profileUrl?: string;
+}
+
+export async function updateProfilePicture(
+    currentState: UpdateProfilePictureState,
+    formData: FormData
+): Promise<UpdateProfilePictureState> {
+    if (!supabase) {
+        return { success: false, message: 'File storage is not configured.' };
+    }
+
+    const memberUUID = formData.get('memberUUID') as string;
+    const file = formData.get('profilePicture') as File;
+
+    if (!memberUUID) {
+        return { success: false, message: 'Member identifier is missing.' };
+    }
+    if (!file || file.size === 0) {
+        return { success: false, message: 'No file was selected for upload.' };
+    }
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${memberUUID}-${Date.now()}.${fileExt}`;
+    const filePath = `profile-pictures/${fileName}`;
+
+    try {
+        const { error: uploadError } = await supabase.storage
+            .from('media')
+            .upload(filePath, file);
+
+        if (uploadError) {
+            console.error('[updateProfilePicture] Supabase Storage error:', uploadError);
+            return { success: false, message: `Storage error: ${uploadError.message}` };
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('media')
+            .getPublicUrl(filePath);
+
+        const { success, error: dbError } = await updateProfilePictureUrl(memberUUID, publicUrl);
+
+        if (!success) {
+            return { success: false, message: dbError || 'Failed to save picture URL to profile.' };
+        }
+        
+        revalidatePath('/me/settings');
+        revalidatePath('/me/dashboard');
+        return { success: true, message: 'Profile picture updated!', profileUrl: publicUrl };
+
+    } catch (error) {
+        console.error('[updateProfilePicture] Action error:', error);
+        return { success: false, message: 'An unexpected error occurred during file upload.' };
     }
 }

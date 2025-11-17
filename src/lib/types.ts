@@ -25,6 +25,7 @@ export type Checkin = {
   id: string; // uuid
   memberId: string; // uuid, FK to members.id
   checkInTime: string; // timestamptz (ISO string)
+  check_out_time?: string | null;
 };
 
 export type Announcement = {

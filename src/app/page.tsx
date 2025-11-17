@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Search, Info, AlertTriangle, Loader2 } from "lucide-react";
+import { Info, AlertTriangle, Loader2 } from "lucide-react";
 import { MemberLookupForm } from '@/components/member-lookup-form';
 import { HomePageHeader } from '@/components/home-page-header';
 import { useUser, useAuth } from '@/firebase';
@@ -33,11 +33,11 @@ export default function HomePage() {
     setIsLookingUp(true);
     setError(null);
     try {
+      // Non-blocking sign-in
+      initiateAnonymousSignIn(auth);
+
       const member = await getMemberProfile(email, memberId);
       if (member) {
-        // Non-blocking sign-in
-        initiateAnonymousSignIn(auth);
-        
         // Store details in sessionStorage to persist across page reloads
         sessionStorage.setItem('memberId', member.member_id);
         sessionStorage.setItem('email', member.email);
@@ -56,8 +56,8 @@ export default function HomePage() {
     }
   };
   
-  // Display a loading state while checking auth status
-  if (isUserLoading || user) {
+  // Display a loading state while checking auth status or redirecting
+  if (isUserLoading || (user && sessionStorage.getItem('memberId'))) {
     return (
       <div className="flex flex-col min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />

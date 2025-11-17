@@ -1,5 +1,4 @@
 
-
 import type { Member, Checkin, Announcement, MembershipPlan, Message, SmtpConfig, Workout, WorkoutExercise, BodyWeightLog, PersonalRecord } from './types';
 import { createClient } from '@supabase/supabase-js';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
@@ -143,7 +142,14 @@ export async function getMemberCheckins(memberDisplayId: string): Promise<Checki
     return [];
   }
   
-  return (checkinsData as Checkin[]) || [];
+  const checkins = (checkinsData || []).map(c => ({
+    id: c.id,
+    memberId: c.member_table_id,
+    checkInTime: c.check_in_time,
+    check_out_time: c.check_out_time,
+  }));
+
+  return checkins as Checkin[];
 }
 
 export async function getGymAnnouncements(gymId: string): Promise<Announcement[]> {
@@ -514,7 +520,7 @@ export function calculateWorkoutStreak(checkins: Checkin[]): number {
   if (checkins.length === 0) return 0;
 
   const sortedCheckinDates = checkins
-    .map(c => startOfDay(parseISO(c.check_in_time)))
+    .map(c => startOfDay(parseISO(c.checkInTime)))
     .filter((date, index, self) => 
         index === self.findIndex(d => d.getTime() === date.getTime())
     )
@@ -552,9 +558,3 @@ export function calculateWorkoutStreak(checkins: Checkin[]): number {
   
   return currentStreak;
 }
-
-
-
-    
-
-

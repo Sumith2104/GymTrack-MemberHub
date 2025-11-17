@@ -16,6 +16,7 @@ export function CheckinNotificationListener() {
   const checkInsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     const fiveMinutesAgo = Timestamp.fromMillis(Date.now() - 5 * 60 * 1000);
+    // Note: The path must match the structure in firestore.rules
     return query(
       collection(firestore, `users/${user.uid}/checkIns`),
       where('checkInTime', '>=', fiveMinutesAgo),
@@ -33,7 +34,11 @@ export function CheckinNotificationListener() {
       const now = new Date();
       const timeDiffMinutes = (now.getTime() - checkinTime.getTime()) / (1000 * 60);
 
-      if (timeDiffMinutes < 1) { 
+      // Check if the notification for this check-in has already been shown
+      const notificationShownKey = `notif_${latestCheckin.id}`;
+      const hasBeenShown = sessionStorage.getItem(notificationShownKey);
+
+      if (timeDiffMinutes < 1 && !hasBeenShown) { 
         toast({
           title: (
             <div className="flex items-center gap-2">
@@ -43,6 +48,8 @@ export function CheckinNotificationListener() {
           ),
           description: "Welcome to the gym! Have a great workout.",
         });
+        // Mark this notification as shown in session storage
+        sessionStorage.setItem(notificationShownKey, 'true');
       }
     }
   }, [checkIns, toast]);
