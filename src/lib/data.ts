@@ -145,7 +145,7 @@ export async function getMemberCheckins(memberDisplayId: string): Promise<Checki
   const checkins = (checkinsData || []).map(c => ({
     id: c.id,
     memberId: c.member_table_id,
-    checkInTime: c.check_in_time,
+    check_in_time: c.check_in_time,
     check_out_time: c.check_out_time,
   }));
 
@@ -321,6 +321,25 @@ export async function updateMemberEmail(memberDisplayId: string, newEmail: strin
 
   return { success: true };
 }
+
+export async function updateProfilePictureUrl(memberUUID: string, profileUrl: string): Promise<{ success: boolean; error?: string; }> {
+  if (!supabase) {
+    return { success: false, error: "Database connection not available." };
+  }
+  
+  const { error } = await supabase
+    .from('members')
+    .update({ profile_url: profileUrl })
+    .eq('id', memberUUID);
+
+  if (error) {
+    console.error(`[updateProfilePictureUrl] Supabase error for member ${memberUUID}:`, error);
+    return { success: false, error: 'Failed to update profile picture in the database.' };
+  }
+
+  return { success: true };
+}
+
 
 export async function getGymSmtpConfig(gymId: string): Promise<SmtpConfig | null> {
   if (!supabase) {
@@ -520,7 +539,7 @@ export function calculateWorkoutStreak(checkins: Checkin[]): number {
   if (checkins.length === 0) return 0;
 
   const sortedCheckinDates = checkins
-    .map(c => startOfDay(parseISO(c.checkInTime)))
+    .map(c => startOfDay(parseISO(c.check_in_time)))
     .filter((date, index, self) => 
         index === self.findIndex(d => d.getTime() === date.getTime())
     )

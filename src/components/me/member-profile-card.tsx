@@ -4,8 +4,9 @@
 
 import type { Member } from '@/lib/types';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -93,7 +94,13 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
       <CardHeader className="flex flex-row items-center gap-4 p-4">
         <div className="relative flex-shrink-0">
             <Avatar className="h-16 w-16 border">
-                <AvatarFallback className="text-xl font-semibold">{getInitials(member.name)}</AvatarFallback>
+                {member.profile_url ? (
+                  <AvatarImage asChild src={member.profile_url} alt={`${member.name}'s profile picture`}>
+                    <Image src={member.profile_url} alt={`${member.name}'s profile picture`} width={64} height={64} />
+                  </AvatarImage>
+                ) : (
+                  <AvatarFallback className="text-xl font-semibold">{getInitials(member.name)}</AvatarFallback>
+                )}
             </Avatar>
              <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground">
                 <span className="text-sm font-bold">{streak}</span>
@@ -133,7 +140,7 @@ export function MemberProfileCard({ member, streak }: MemberProfileCardProps) {
           {member.member_id && (
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="default" size="sm">
+                <Button variant="default" className="bg-primary hover:bg-primary/90 text-primary-foreground" size="sm">
                   <QrCode className="mr-2 h-4 w-4" />
                   Show ID Card
                 </Button>

@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, UserSearch, Settings } from "lucide-react";
 import { ChangeEmailForm } from '@/components/me/change-email-form';
 import { UpdateProfileForm } from '@/components/me/update-profile-form';
+import { UpdateProfilePictureForm } from '@/components/me/settings/update-profile-picture-form';
 import Link from 'next/link';
 
 export default async function SettingsPage({
@@ -51,6 +52,7 @@ export default async function SettingsPage({
           <Settings className="h-8 w-8 text-primary" />
           Settings
       </h1>
+      <UpdateProfilePictureForm member={member} />
       <UpdateProfileForm member={member} />
       <ChangeEmailForm member={member} />
     </div>
