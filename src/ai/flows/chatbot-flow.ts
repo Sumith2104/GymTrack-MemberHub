@@ -1,4 +1,3 @@
-
 'use server';
 
 import { ai } from '@/ai/genkit';
@@ -6,7 +5,9 @@ import { z } from 'genkit';
 import { ChatMessageSchema } from '@/lib/types';
 import type { ChatMessage } from '@/lib/types';
 
-const HistorySchema = z.array(ChatMessageSchema);
+const HistorySchema = z.object({
+    history: z.array(ChatMessageSchema)
+});
 
 const chatPrompt = ai.definePrompt({
   name: 'chatbotPrompt',
@@ -22,7 +23,7 @@ Your goal is to provide helpful, safe, and encouraging advice on fitness, nutrit
 - Use the conversation history to maintain context.
 
 Conversation History:
-{{#each input}}
+{{#each history}}
 {{role}}: {{content}}
 {{/each}}
 
@@ -33,11 +34,11 @@ Assistant:
 const chatbotFlow = ai.defineFlow(
   {
     name: 'chatbotFlow',
-    inputSchema: HistorySchema,
+    inputSchema: z.array(ChatMessageSchema),
     outputSchema: z.string(),
   },
   async (history) => {
-    const { output } = await chatPrompt(history);
+    const { output } = await chatPrompt({ history });
     return output!;
   }
 );
