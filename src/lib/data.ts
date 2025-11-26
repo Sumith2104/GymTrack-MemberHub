@@ -144,7 +144,7 @@ export async function getMemberCheckins(memberDisplayId: string): Promise<Checki
   
   const checkins = (checkinsData || []).map(c => ({
     id: c.id,
-    memberId: c.member_table_id,
+    member_table_id: c.member_table_id,
     check_in_time: c.check_in_time,
     check_out_time: c.check_out_time,
   }));

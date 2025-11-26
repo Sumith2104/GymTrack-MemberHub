@@ -45,7 +45,11 @@ export function MemberHubNavigation() {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    sessionStorage.removeItem('memberId');
+    sessionStorage.removeItem('email');
+    if (auth) {
+      await signOut(auth);
+    }
     router.push('/');
   };
 

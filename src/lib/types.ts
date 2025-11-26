@@ -23,8 +23,8 @@ export type Member = {
 
 export type Checkin = {
   id: string; // uuid
-  memberId: string; // uuid, FK to members.id
-  checkInTime: string; // timestamptz (ISO string)
+  member_table_id: string; // uuid, FK to members.id
+  check_in_time: string; // timestamptz (ISO string)
   check_out_time?: string | null;
 };
 
