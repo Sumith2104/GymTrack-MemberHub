@@ -5,13 +5,9 @@ import { z } from 'genkit';
 import { ChatMessageSchema } from '@/lib/types';
 import type { ChatMessage } from '@/lib/types';
 
-const HistorySchema = z.object({
-    history: z.array(ChatMessageSchema)
-});
-
 const chatPrompt = ai.definePrompt({
   name: 'chatbotPrompt',
-  input: { schema: HistorySchema },
+  input: { schema: z.array(ChatMessageSchema) },
   output: { schema: z.string() },
   model: 'googleai/gemini-1.5-flash-latest',
   prompt: `
@@ -23,7 +19,7 @@ Your goal is to provide helpful, safe, and encouraging advice on fitness, nutrit
 - Use the conversation history to maintain context.
 
 Conversation History:
-{{#each history}}
+{{#each .}}
 {{role}}: {{content}}
 {{/each}}
 
@@ -38,7 +34,7 @@ const chatbotFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (history) => {
-    const { output } = await chatPrompt({ history });
+    const { output } = await chatPrompt(history);
     return output!;
   }
 );
