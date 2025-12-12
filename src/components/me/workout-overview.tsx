@@ -6,6 +6,7 @@ import type { Workout, BodyWeightLog, PersonalRecord } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dumbbell, Weight, Trophy, Flame } from 'lucide-react';
 import { useMemo } from 'react';
+import { parseISO } from 'date-fns';
 
 interface WorkoutOverviewProps {
     workouts: Workout[];
@@ -38,9 +39,14 @@ export function WorkoutOverview({ workouts, bodyWeightLogs, personalRecords, str
     const totalWorkouts = workouts.length;
 
     const latestWeight = useMemo(() => {
-        if (bodyWeightLogs.length === 0) return "N/A";
-        // The logs are now pre-sorted descending by date from the server
-        return `${bodyWeightLogs[0].weight.toFixed(1)} kg`;
+        if (!bodyWeightLogs || bodyWeightLogs.length === 0) return "N/A";
+        
+        // Ensure logs are sorted by date descending to get the latest one
+        const sortedLogs = [...bodyWeightLogs].sort((a, b) => 
+            parseISO(b.date).getTime() - parseISO(a.date).getTime()
+        );
+        
+        return `${sortedLogs[0].weight.toFixed(1)} kg`;
     }, [bodyWeightLogs]);
     
     const topPR = useMemo(() => {
