@@ -29,14 +29,14 @@ export default async function PaymentsPage({
 
   const member = await getMemberProfile(email, memberDisplayId);
 
-  if (!member || !member.gym_id || !member.payment_id) {
+  if (!member || !member.gym_id) {
     return (
       <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
         <Alert variant="destructive">
           <UserSearch className="h-4 w-4" />
           <AlertTitle>Cannot Load Payments</AlertTitle>
           <AlertDescription>
-            Could not retrieve your complete profile details or payment information for your gym. Please contact support.
+            Could not retrieve your complete profile details for your gym. Please contact support.
             You can return to the <Link href="/" className="underline hover:text-destructive-foreground/80"> main lookup page</Link>.
           </AlertDescription>
         </Alert>
