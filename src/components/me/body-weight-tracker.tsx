@@ -44,8 +44,12 @@ function SubmitButton() {
     )
 }
 
+const sortLogsByDate = (logs: BodyWeightLog[]) => {
+    return [...logs].sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
+};
+
 export function BodyWeightTracker({ initialLogs, memberId }: BodyWeightTrackerProps) {
-    const [logs, setLogs] = useState(initialLogs);
+    const [logs, setLogs] = useState(() => sortLogsByDate(initialLogs));
     const { toast } = useToast();
     const [actionState, formAction] = useActionState(logWeightAction, initialState);
     
@@ -56,7 +60,7 @@ export function BodyWeightTracker({ initialLogs, memberId }: BodyWeightTrackerPr
     
     useEffect(() => {
         if (actionState.success && actionState.data) {
-            setLogs(prevLogs => [...prevLogs, actionState.data!].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+            setLogs(prevLogs => sortLogsByDate([...prevLogs, actionState.data!]));
             toast({ title: "Success", description: "New weight entry added." });
         } else if (!actionState.success && actionState.message && actionState.message !== 'Invalid input.') {
              toast({ title: "Error", description: actionState.message, variant: 'destructive' });
