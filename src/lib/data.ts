@@ -439,10 +439,22 @@ export async function getMemberWorkouts(memberId: string): Promise<Workout[]> {
     console.error('[getMemberWorkouts] Error fetching workouts:', workoutsError);
     return [];
   }
-
+  
+  // The 'workout_exercises' are returned as a nested array.
+  // We need to map them to the 'exercises' property of the Workout type.
   return workouts.map(w => ({
-    ...w,
-    exercises: w.workout_exercises,
+    id: w.id,
+    member_id: w.member_id,
+    date: w.date,
+    notes: w.notes,
+    created_at: w.created_at,
+    exercises: w.workout_exercises.map((ex: any) => ({
+      id: ex.id, // This is the crucial fix
+      name: ex.name,
+      sets: ex.sets,
+      reps: ex.reps,
+      weight: ex.weight,
+    })),
   })) as Workout[];
 }
 
