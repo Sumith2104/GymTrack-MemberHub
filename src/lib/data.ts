@@ -334,7 +334,7 @@ export async function updateProfilePictureUrl(memberUUID: string, profileUrl: st
 
   if (error) {
     console.error(`[updateProfilePictureUrl] Supabase error for member ${memberUUID}:`, error);
-    return { success: false, error: 'Failed to update profile picture in the database.' };
+    return { success: false, error: 'Failed to save picture URL to profile.' };
   }
 
   return { success: true };
@@ -518,13 +518,12 @@ export async function logBodyWeight(memberId: string, weight: number, date: stri
 
   const { data, error } = await supabaseAdmin
     .from('body_weight_logs')
-    .upsert(
+    .insert(
       {
         member_id: memberId,
         weight: weight,
         date: date,
-      },
-      { onConflict: 'member_id, date' }
+      }
     )
     .select()
     .single();
@@ -619,3 +618,4 @@ export function calculateWorkoutStreak(checkins: Checkin[]): number {
   
   return currentStreak;
 }
+
