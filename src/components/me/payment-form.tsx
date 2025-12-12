@@ -70,6 +70,9 @@ export function PaymentForm({ member }: PaymentFormProps) {
         setAvailablePlans(plans);
         if (member.plan_id && plans.some(p => p.id === member.plan_id)) {
           setSelectedPlanId(member.plan_id);
+        } else if (plans.length > 0) {
+          // Default to the first plan if current plan isn't in the list
+          setSelectedPlanId(plans[0].id);
         }
       })
       .catch(err => {
@@ -92,6 +95,8 @@ export function PaymentForm({ member }: PaymentFormProps) {
       phonepe: baseUpiLink.replace('upi://', 'phonepe://'),
       paytm: baseUpiLink.replace('upi://', 'paytmmp://'),
   } : null;
+  
+  const needsRenewal = daysUntilExpiry === null || daysUntilExpiry <= 7;
 
   return (
     <Card>
@@ -157,12 +162,14 @@ export function PaymentForm({ member }: PaymentFormProps) {
         )}
       </CardContent>
       <CardFooter>
-        {daysUntilExpiry !== null && daysUntilExpiry > 7 ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-                <p>You have enough days remaining on your membership.</p>
-            </div>
-        ) : (
+        <div className="flex flex-col gap-4 w-full">
+            {!needsRenewal && (
+                 <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 p-3 rounded-md bg-green-500/10">
+                    <ShieldCheck className="h-5 w-5" />
+                    <p>Your membership is active with plenty of time remaining.</p>
+                </div>
+            )}
+
             <Dialog>
             <DialogTrigger asChild>
                 <Button className="w-full sm:w-auto" disabled={!baseUpiLink}>
@@ -235,8 +242,9 @@ export function PaymentForm({ member }: PaymentFormProps) {
                 </DialogContent>
             )}
             </Dialog>
-        )}
+        </div>
       </CardFooter>
     </Card>
   );
 }
+
