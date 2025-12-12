@@ -2,8 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -73,7 +72,7 @@ function SubmitButton() {
 export function LogWorkoutForm({ memberId }: LogWorkoutFormProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const [actionState, formAction] = useActionState(logWorkoutAction, initialState);
+  const [actionState, formAction] = useFormState(logWorkoutAction, initialState);
 
   const {
     register,

@@ -3,8 +3,7 @@
 
 import type { Member } from '@/lib/types';
 import { useState, useEffect, useRef } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import { updateProfilePicture, type UpdateProfilePictureState } from '@/app/me/settings/actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -42,7 +41,7 @@ function SubmitButton() {
 
 export function UpdateProfilePictureForm({ member }: UpdateProfilePictureFormProps) {
   const { toast } = useToast();
-  const [state, formAction] = useActionState(updateProfilePicture, initialState);
+  const [state, formAction] = useFormState(updateProfilePicture, initialState);
   const [previewUrl, setPreviewUrl] = useState<string | null>(member.profile_url || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

@@ -3,8 +3,7 @@
 
 import type { BodyWeightLog } from '@/lib/types';
 import { useState, useEffect } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -51,7 +50,7 @@ const sortLogsByDate = (logs: BodyWeightLog[]) => {
 export function BodyWeightTracker({ initialLogs, memberId }: BodyWeightTrackerProps) {
     const [logs, setLogs] = useState(() => sortLogsByDate(initialLogs));
     const { toast } = useToast();
-    const [actionState, formAction] = useActionState(logWeightAction, initialState);
+    const [actionState, formAction] = useFormState(logWeightAction, initialState);
     
     const chartData = logs.map(log => ({
         date: format(parseISO(log.date), 'MMM d'),

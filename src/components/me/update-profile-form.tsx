@@ -1,9 +1,9 @@
+
 "use client";
 
 import type { Member } from '@/lib/types';
 import { useEffect } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { updateProfile, type UpdateProfileState } from '@/app/me/settings/actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -36,7 +36,7 @@ function SubmitButton() {
 
 export function UpdateProfileForm({ member }: UpdateProfileFormProps) {
     const { toast } = useToast();
-    const [state, formAction] = useActionState(updateProfile, initialFormState);
+    const [state, formAction] = useFormState(updateProfile, initialFormState);
 
     useEffect(() => {
         if (state.message) {

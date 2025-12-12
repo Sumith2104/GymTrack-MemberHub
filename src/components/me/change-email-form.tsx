@@ -1,9 +1,9 @@
+
 "use client";
 
 import type { Member } from '@/lib/types';
 import { useState, useEffect } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { requestEmailChange, verifyEmailChange, type RequestEmailChangeState, type VerifyEmailChangeState } from '@/app/me/settings/actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -41,8 +41,8 @@ export function ChangeEmailForm({ member }: ChangeEmailFormProps) {
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
-  const [requestState, requestAction] = useActionState(requestEmailChange, initialRequestState);
-  const [verifyState, verifyAction] = useActionState(verifyEmailChange, initialVerifyState);
+  const [requestState, requestAction] = useFormState(requestEmailChange, initialRequestState);
+  const [verifyState, verifyAction] = useFormState(verifyEmailChange, initialVerifyState);
   
   const [step, setStep] = useState(1);
 
