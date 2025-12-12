@@ -4,6 +4,7 @@
 import type { Message, Member } from '@/lib/types';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -12,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Loader2, Users, RefreshCw, AlertTriangle, Search, X } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 import { sendMessage } from './actions';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/lib/supabaseClient';
 
 interface MessageInterfaceProps {
@@ -249,7 +250,13 @@ export function MessageInterface({ initialMessages, member }: MessageInterfacePr
 
                               {isSender && (
                                   <Avatar className="h-8 w-8">
+                                    {member.profile_url ? (
+                                      <AvatarImage asChild src={member.profile_url} alt={`${member.name}'s profile picture`}>
+                                        <Image src={member.profile_url} alt={`${member.name}'s profile picture`} width={32} height={32} />
+                                      </AvatarImage>
+                                    ) : (
                                       <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
+                                    )}
                                   </Avatar>
                               )}
                           </div>
