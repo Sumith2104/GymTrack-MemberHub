@@ -495,7 +495,7 @@ export async function getMemberBodyWeightLogs(memberId: string): Promise<BodyWei
     .from('body_weight_logs')
     .select('*')
     .eq('member_id', memberId)
-    .order('date', { ascending: true });
+    .order('date', { ascending: false });
   
   if (error) {
     console.error('[getMemberBodyWeightLogs] Error fetching body weight logs:', error);
@@ -618,4 +618,3 @@ export function calculateWorkoutStreak(checkins: Checkin[]): number {
   
   return currentStreak;
 }
-
