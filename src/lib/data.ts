@@ -505,34 +505,27 @@ export async function getMemberBodyWeightLogs(memberId: string): Promise<BodyWei
 }
 
 export async function logBodyWeight(memberId: string, weight: number, date: string): Promise<{ success: boolean; data?: BodyWeightLog; error?: string }> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceRoleKey) {
-    const errorMessage = 'Server is not configured for administrative database operations.';
+  if (!supabase) {
+    const errorMessage = 'Database connection is not available.';
     console.error(`[logBodyWeight] ${errorMessage}`);
     return { success: false, error: errorMessage };
   }
-  
-  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('body_weight_logs')
-    .insert(
-      {
-        member_id: memberId,
-        weight: weight,
-        date: date,
-      }
-    )
+    .insert({
+      member_id: memberId,
+      weight: weight,
+      date: date,
+    })
     .select()
     .single();
 
   if (error) {
-    console.error('[logBodyWeight] Supabase admin error:', error);
+    console.error('[logBodyWeight] Supabase error:', error);
     return { success: false, error: `Database error: ${error.message}` };
   }
-  
+
   return { success: true, data: data as BodyWeightLog };
 }
 
