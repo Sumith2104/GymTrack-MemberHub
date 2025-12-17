@@ -5,7 +5,6 @@ import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 let supabase: ReturnType<typeof createClient> | null = null;
 if (supabaseUrl && supabaseAnonKey) {
@@ -13,20 +12,6 @@ if (supabaseUrl && supabaseAnonKey) {
 } else {
   console.error("Supabase URL or Anon Key is missing.");
 }
-
-const getSupabaseAdmin = () => {
-  if (supabaseUrl && supabaseServiceRoleKey) {
-    return createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-  }
-  console.error("Supabase service role key is missing. Admin operations will fail.");
-  return null;
-}
-
 
 export async function getMemberProfile(email: string, memberDisplayId: string): Promise<Member | null> {
   if (!supabase) {
@@ -519,14 +504,13 @@ export async function getMemberBodyWeightLogs(memberId: string): Promise<BodyWei
 }
 
 export async function logBodyWeight(memberId: string, weight: number, date: string): Promise<{ success: boolean; data?: BodyWeightLog; error?: string }> {
-  const supabaseAdmin = getSupabaseAdmin();
-  if (!supabaseAdmin) {
-    const errorMessage = 'Server is not configured for admin database operations.';
+  if (!supabase) {
+    const errorMessage = 'Server is not configured for database operations.';
     console.error(`[logBodyWeight] ${errorMessage}`);
     return { success: false, error: errorMessage };
   }
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('body_weight_logs')
     .insert({
       member_id: memberId,
