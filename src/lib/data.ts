@@ -518,11 +518,16 @@ export async function logBodyWeight(memberId: string, weight: number, date: stri
 
   if (error) {
     console.error('[logBodyWeight] Supabase error:', error);
+    // This is where the RLS error would be caught.
+    if (error.code === '42501') { // permission denied for table
+        return { success: false, error: 'Server is not configured for administrative database operations.' };
+    }
     return { success: false, error: `Database error: ${error.message}` };
   }
 
   return { success: true, data: data as BodyWeightLog };
 }
+
 
 const calculateEpley1RM = (weight: number, reps: number): number => {
     if (reps === 1) return weight;
