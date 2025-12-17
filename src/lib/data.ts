@@ -5,7 +5,6 @@ import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 let supabase: ReturnType<typeof createClient> | null = null;
 if (supabaseUrl && supabaseAnonKey) {
@@ -13,20 +12,6 @@ if (supabaseUrl && supabaseAnonKey) {
 } else {
   console.error("Supabase URL or Anon Key is missing.");
 }
-
-// Create a separate, server-side only client for admin operations
-let supabaseAdmin: ReturnType<typeof createClient> | null = null;
-if (supabaseUrl && supabaseServiceRoleKey) {
-  supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  });
-} else {
-    console.warn("[data.ts] Supabase service role key is missing. Admin operations will fail.");
-}
-
 
 export async function getMemberProfile(email: string, memberDisplayId: string): Promise<Member | null> {
   if (!supabase) {
@@ -402,53 +387,51 @@ export async function getGymSmtpConfig(gymId: string): Promise<SmtpConfig | null
 }
 
 export async function createWorkout(workoutData: Omit<Workout, 'id' | 'created_at' | 'exercises'> & { exercises: Omit<WorkoutExercise, 'id' | 'workout_id' | 'created_at'>[], member_id: string }): Promise<{ success: boolean; data?: Workout; error?: string }> {
-    if (!supabaseAdmin) {
-      return { success: false, error: "Server is not configured for administrative database operations." };
-    }
+  if (!supabase) {
+    return { success: false, error: "Database client is not initialized." };
+  }
 
-    // Step 1: Insert the main workout record
-    const { data: newWorkout, error: workoutError } = await supabaseAdmin
-        .from('workouts')
-        .insert({
-            member_id: workoutData.member_id,
-            date: workoutData.date,
-            notes: workoutData.notes,
-        })
-        .select()
-        .single();
+  // This function might require admin privileges if RLS is restrictive
+  // For now, we assume the user has the right policies to insert.
+  const { data: newWorkout, error: workoutError } = await supabase
+      .from('workouts')
+      .insert({
+          member_id: workoutData.member_id,
+          date: workoutData.date,
+          notes: workoutData.notes,
+      })
+      .select()
+      .single();
 
-    if (workoutError) {
-        console.error('[createWorkout] Error creating workout entry:', workoutError);
-        return { success: false, error: `Failed to save workout session: ${workoutError.message}` };
-    }
+  if (workoutError) {
+      console.error('[createWorkout] Error creating workout entry:', workoutError);
+      return { success: false, error: `Failed to save workout session: ${workoutError.message}` };
+  }
 
-    // Step 2: Prepare and insert the associated exercises
-    const exercisesToInsert = workoutData.exercises.map(ex => ({
-        ...ex,
-        workout_id: newWorkout.id, // Use the ID from the newly created workout
-    }));
+  const exercisesToInsert = workoutData.exercises.map(ex => ({
+      ...ex,
+      workout_id: newWorkout.id,
+  }));
 
-    const { data: insertedExercises, error: exercisesError } = await supabaseAdmin
-        .from('workout_exercises')
-        .insert(exercisesToInsert)
-        .select();
+  const { data: insertedExercises, error: exercisesError } = await supabase
+      .from('workout_exercises')
+      .insert(exercisesToInsert)
+      .select();
 
-    if (exercisesError) {
-        console.error('[createWorkout] Error creating exercises:', exercisesError);
-        // Optional: Attempt to delete the orphaned workout record for cleanup
-        await supabaseAdmin.from('workouts').delete().eq('id', newWorkout.id);
-        return { success: false, error: `Failed to save exercises for the workout: ${exercisesError.message}` };
-    }
+  if (exercisesError) {
+      console.error('[createWorkout] Error creating exercises:', exercisesError);
+      // Attempt to delete the orphaned workout record
+      await supabase.from('workouts').delete().eq('id', newWorkout.id);
+      return { success: false, error: `Failed to save exercises for the workout: ${exercisesError.message}` };
+  }
 
-    // Step 3: Return the complete workout object
-    const completeWorkout: Workout = {
-        ...newWorkout,
-        exercises: insertedExercises as WorkoutExercise[],
-    };
+  const completeWorkout: Workout = {
+      ...newWorkout,
+      exercises: insertedExercises as WorkoutExercise[],
+  };
 
-    return { success: true, data: completeWorkout };
+  return { success: true, data: completeWorkout };
 }
-
 
 export async function updateProfilePicture(memberUUID: string, profileUrl: string): Promise<{ success: boolean; error?: string; }> {
   if (!supabase) {
@@ -482,8 +465,6 @@ export async function getMemberWorkouts(memberId: string): Promise<Workout[]> {
     return [];
   }
   
-  // The 'workout_exercises' are returned as a nested array.
-  // We need to map them to the 'exercises' property of the Workout type.
   return workouts.map(w => ({
     id: w.id,
     member_id: w.member_id,
@@ -519,13 +500,13 @@ export async function getMemberBodyWeightLogs(memberId: string): Promise<BodyWei
 }
 
 export async function logBodyWeight(memberId: string, weight: number, date: string): Promise<{ success: boolean; data?: BodyWeightLog; error?: string }> {
-  if (!supabaseAdmin) {
-    const errorMessage = 'Server is not configured for administrative database operations.';
+  if (!supabase) {
+    const errorMessage = 'Database client is not initialized.';
     console.error(`[logBodyWeight] ${errorMessage}`);
     return { success: false, error: errorMessage };
   }
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('body_weight_logs')
     .insert({
       member_id: memberId,
@@ -543,8 +524,6 @@ export async function logBodyWeight(memberId: string, weight: number, date: stri
   return { success: true, data: data as BodyWeightLog };
 }
 
-
-// Epley formula for 1-rep max estimation
 const calculateEpley1RM = (weight: number, reps: number): number => {
     if (reps === 1) return weight;
     return weight * (1 + reps / 30);
@@ -625,3 +604,5 @@ export function calculateWorkoutStreak(checkins: Checkin[]): number {
   
   return currentStreak;
 }
+
+    
