@@ -5,6 +5,7 @@ import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 let supabase: ReturnType<typeof createClient> | null = null;
 if (supabaseUrl && supabaseAnonKey) {
@@ -12,6 +13,20 @@ if (supabaseUrl && supabaseAnonKey) {
 } else {
   console.error("Supabase URL or Anon Key is missing.");
 }
+
+// Create a separate, server-side only client for admin operations
+let supabaseAdmin: ReturnType<typeof createClient> | null = null;
+if (supabaseUrl && supabaseServiceRoleKey) {
+  supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+} else {
+    console.warn("[data.ts] Supabase service role key is missing. Admin operations will fail.");
+}
+
 
 export async function getMemberProfile(email: string, memberDisplayId: string): Promise<Member | null> {
   if (!supabase) {
@@ -387,12 +402,12 @@ export async function getGymSmtpConfig(gymId: string): Promise<SmtpConfig | null
 }
 
 export async function createWorkout(workoutData: Omit<Workout, 'id' | 'created_at' | 'exercises'> & { exercises: Omit<WorkoutExercise, 'id' | 'workout_id' | 'created_at'>[], member_id: string }): Promise<{ success: boolean; data?: Workout; error?: string }> {
-    if (!supabase) {
-        return { success: false, error: 'Database connection not available.' };
+    if (!supabaseAdmin) {
+      return { success: false, error: "Server is not configured for administrative database operations." };
     }
 
     // Step 1: Insert the main workout record
-    const { data: newWorkout, error: workoutError } = await supabase
+    const { data: newWorkout, error: workoutError } = await supabaseAdmin
         .from('workouts')
         .insert({
             member_id: workoutData.member_id,
@@ -413,7 +428,7 @@ export async function createWorkout(workoutData: Omit<Workout, 'id' | 'created_a
         workout_id: newWorkout.id, // Use the ID from the newly created workout
     }));
 
-    const { data: insertedExercises, error: exercisesError } = await supabase
+    const { data: insertedExercises, error: exercisesError } = await supabaseAdmin
         .from('workout_exercises')
         .insert(exercisesToInsert)
         .select();
@@ -421,7 +436,7 @@ export async function createWorkout(workoutData: Omit<Workout, 'id' | 'created_a
     if (exercisesError) {
         console.error('[createWorkout] Error creating exercises:', exercisesError);
         // Optional: Attempt to delete the orphaned workout record for cleanup
-        await supabase.from('workouts').delete().eq('id', newWorkout.id);
+        await supabaseAdmin.from('workouts').delete().eq('id', newWorkout.id);
         return { success: false, error: `Failed to save exercises for the workout: ${exercisesError.message}` };
     }
 
@@ -504,13 +519,13 @@ export async function getMemberBodyWeightLogs(memberId: string): Promise<BodyWei
 }
 
 export async function logBodyWeight(memberId: string, weight: number, date: string): Promise<{ success: boolean; data?: BodyWeightLog; error?: string }> {
-  if (!supabase) {
-    const errorMessage = 'Server is not configured for database operations.';
+  if (!supabaseAdmin) {
+    const errorMessage = 'Server is not configured for administrative database operations.';
     console.error(`[logBodyWeight] ${errorMessage}`);
     return { success: false, error: errorMessage };
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('body_weight_logs')
     .insert({
       member_id: memberId,
