@@ -1,0 +1,47 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Member profiles are readable by any authenticated user
+    // but should only be writable by a backend process (not enforced here).
+    match /members/{memberId} {
+      allow read: if isSignedIn();
+      allow write: if false; 
+    }
+
+    // Announcements are public, but not writable by clients.
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // User-specific data is nested under the user's ID.
+    match /users/{userId} {
+      // Allow user to read and write their own data.
+      allow read, write: if isOwner(userId);
+
+      // Check-ins can be created by the user for themselves.
+      match /checkIns/{checkInId} {
+        allow create: if isOwner(userId) && request.resource.data.memberId == userId;
+        allow read, update, delete: if isOwner(userId);
+      }
+      
+      // Notifications can be created by the user for themselves.
+      match /notifications/{notificationId} {
+        allow create: if isOwner(userId) && request.resource.data.memberId == userId;
+        allow read, update, delete: if isOwner(userId);
+      }
+    }
+  }
+}

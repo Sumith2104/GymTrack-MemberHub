@@ -1,0 +1,140 @@
+
+
+'use server';
+
+import { z } from 'zod';
+import { createWorkout, logBodyWeight } from '@/lib/data';
+import type { Workout, BodyWeightLog, WorkoutExercise } from '@/lib/types';
+import { revalidatePath } from 'next/cache';
+
+const exerciseSchema = z.object({
+  name: z.string().min(1, 'Exercise name is required.'),
+  sets: z.coerce.number().int().positive('Sets must be a positive number.'),
+  reps: z.coerce.number().int().positive('Reps must be a positive number.'),
+  weight: z.coerce.number().min(0, 'Weight cannot be negative.'),
+});
+
+const workoutSchema = z.object({
+  memberId: z.string().uuid('Invalid member ID.'),
+  date: z.string().refine((val) => !isNaN(Date.parse(val)), 'Invalid date.'),
+  notes: z.string().optional(),
+  exercises: z.array(exerciseSchema).min(1, 'At least one exercise is required.'),
+});
+
+export interface LogWorkoutState {
+  success: boolean;
+  message: string;
+  errors?: Partial<Record<string, string | string[]>>;
+}
+
+export async function logWorkoutAction(
+  currentState: LogWorkoutState,
+  formData: FormData
+): Promise<LogWorkoutState> {
+  const memberId = formData.get('memberId') as string;
+  const date = formData.get('date') as string;
+  const notes = formData.get('notes') as string;
+
+  const exercises: any[] = [];
+  let exerciseIndex = 0;
+  while (formData.get(`exercises[${exerciseIndex}].name`)) {
+    exercises.push({
+      name: formData.get(`exercises[${exerciseIndex}].name`),
+      sets: formData.get(`exercises-sets-${exerciseIndex}`),
+      reps: formData.get(`exercises-reps-${exerciseIndex}`),
+      weight: formData.get(`exercises-weight-${exerciseIndex}`),
+    });
+    exerciseIndex++;
+  }
+
+  const validation = workoutSchema.safeParse({
+    memberId,
+    date,
+    notes,
+    exercises,
+  });
+
+  if (!validation.success) {
+    const fieldErrors = validation.error.flatten().fieldErrors;
+    console.log("Validation Errors:", fieldErrors);
+    return {
+      success: false,
+      message: 'Validation failed. Please check your inputs.',
+      errors: {
+        ...fieldErrors,
+        exercises: (fieldErrors.exercises as string[]) || 'Error with exercise inputs.'
+      },
+    };
+  }
+
+  try {
+    const newWorkout = {
+      member_id: validation.data.memberId,
+      date: new Date(validation.data.date).toISOString(),
+      notes: validation.data.notes || null,
+      exercises: validation.data.exercises as Omit<WorkoutExercise, 'id' | 'workout_id' | 'created_at'>[],
+    };
+
+    const result = await createWorkout(newWorkout);
+
+    if (!result.success) {
+      return { success: false, message: result.error || 'Failed to save workout.' };
+    }
+
+    revalidatePath('/me/workout-tracking');
+    return { success: true, message: 'Workout logged successfully!' };
+  } catch (error) {
+    console.error('[logWorkoutAction] Error:', error);
+    return { success: false, message: 'An unexpected server error occurred.' };
+  }
+}
+
+const bodyWeightSchema = z.object({
+  memberId: z.string().uuid(),
+  weight: z.coerce.number().positive("Weight must be a positive number."),
+  date: z.string().refine((d) => !isNaN(Date.parse(d)), "Invalid date"),
+});
+
+export interface LogWeightState {
+  success: boolean;
+  message: string;
+  data?: BodyWeightLog;
+  errors?: Partial<Record<string, string[]>>;
+}
+
+export async function logWeightAction(
+  currentState: LogWeightState,
+  formData: FormData
+): Promise<LogWeightState> {
+  const rawData = {
+    memberId: formData.get('memberId'),
+    weight: formData.get('weight'),
+    date: formData.get('date'),
+  };
+
+  const validation = bodyWeightSchema.safeParse(rawData);
+
+  if (!validation.success) {
+    return {
+      success: false,
+      message: 'Invalid input.',
+      errors: validation.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const result = await logBodyWeight(
+      validation.data.memberId,
+      validation.data.weight,
+      validation.data.date
+    );
+    if (!result.success) {
+      return { success: false, message: result.error || 'An unexpected database error occurred.' };
+    }
+    revalidatePath('/me/workout-tracking');
+    return { success: true, message: 'Weight logged!', data: result.data };
+  } catch (error: any) {
+    console.error("[logWeightAction] Catch Error:", error);
+    return { success: false, message: error.message || 'An unexpected server error occurred.' };
+  }
+}
