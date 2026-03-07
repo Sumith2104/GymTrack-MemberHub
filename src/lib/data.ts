@@ -340,6 +340,7 @@ export async function createWorkout(workoutData: Omit<Workout, 'id' | 'created_a
       RETURNING *
     `;
     const workoutRes = await flux.sql(queryWorkout);
+    console.log("Workout Query Response:", workoutRes); // DEBUG LOG
     if (!workoutRes.rows || workoutRes.rows.length === 0) throw new Error("Workout insert failed");
     const newWorkout = workoutRes.rows[0];
 
