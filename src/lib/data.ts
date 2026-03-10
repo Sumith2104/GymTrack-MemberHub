@@ -6,8 +6,8 @@ import { flux } from '@/lib/flux/client';
 import { getISTTimestamp } from '@/lib/utils';
 
 export async function getMemberProfile(email: string, memberDisplayId: string): Promise<Member | null> {
-  const normalizedEmail = email.toLowerCase().replace(/'/g, "''");
-  const normalizedMemberId = memberDisplayId.toUpperCase().replace(/'/g, "''");
+  const normalizedEmail = email.toLowerCase().trim().replace(/'/g, "''");
+  const normalizedMemberId = memberDisplayId.trim().replace(/'/g, "''");
 
   try {
     const query = `
@@ -92,7 +92,7 @@ export async function getMemberProfile(email: string, memberDisplayId: string): 
 }
 
 export async function getMemberCheckins(memberDisplayId: string): Promise<Checkin[]> {
-  const normalizedMemberId = memberDisplayId.toUpperCase().replace(/'/g, "''");
+  const normalizedMemberId = memberDisplayId.trim().replace(/'/g, "''");
   const query = `
     SELECT 
       c.id, 
@@ -250,7 +250,7 @@ export async function updateMemberProfile(memberDisplayId: string, data: { name:
   const query = `
     UPDATE members
     SET ${updates.join(', ')}
-    WHERE member_id = '${memberDisplayId.toUpperCase().replace(/'/g, "''")}'
+    WHERE member_id = '${memberDisplayId.trim().replace(/'/g, "''")}'
   `;
 
   try {
@@ -266,8 +266,8 @@ export async function updateMemberEmail(memberDisplayId: string, newEmail: strin
   try {
     const query = `
       UPDATE members
-      SET email = '${newEmail.toLowerCase().replace(/'/g, "''")}'
-      WHERE member_id = '${memberDisplayId.toUpperCase().replace(/'/g, "''")}'
+      SET email = '${newEmail.toLowerCase().trim().replace(/'/g, "''")}'
+      WHERE member_id = '${memberDisplayId.trim().replace(/'/g, "''")}'
     `;
     await flux.sql(query);
     return { success: true };
