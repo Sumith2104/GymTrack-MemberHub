@@ -6,20 +6,25 @@ export class FluxClient {
     private projectId: string | undefined;
 
     constructor() {
-        this.apiUrl = process.env.NEXT_PUBLIC_FLUX_API_URL || 'https://fluxbase.vercel.app/api';
-        this.apiKey = process.env.FLUX_API_KEY;
-        this.projectId = process.env.FLUX_PROJECT_ID;
+        let rawUrl = process.env.NEXT_PUBLIC_FLUX_API_URL || process.env.FLUXBASE_BASE_URL || process.env.FLUX_API_URL || 'https://fluxbasedb.me';
+        // Remove www. from fluxbasedb.me domain to prevent 301 redirect which turns POST into GET (405 Method Not Allowed)
+        rawUrl = rawUrl.replace('://www.fluxbasedb.me', '://fluxbasedb.me');
+        const cleanUrl = rawUrl.replace(/\/$/, '');
+        this.apiUrl = cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+
+        this.apiKey = process.env.FLUXBASE_API_KEY || process.env.FLUX_API_KEY;
+        this.projectId = process.env.FLUXBASE_PROJECT_ID || process.env.FLUX_PROJECT_ID;
 
         if (!this.apiKey) {
-            console.warn("⚠️ FLUX_API_KEY is missing from environment variables.");
+            console.warn("⚠️ FLUXBASE_API_KEY is missing from environment variables.");
         }
         if (!this.projectId) {
-            console.warn("⚠️ FLUX_PROJECT_ID is missing from environment variables.");
+            console.warn("⚠️ FLUXBASE_PROJECT_ID is missing from environment variables.");
         }
     }
 
-    private async executeFetch(query: string) {
-        const endpoint = `${this.apiUrl.replace(/\/$/, '')}/execute-sql`;
+    private async executeFetch(query: string, params: any[] = []) {
+        const endpoint = `${this.apiUrl}/execute-sql`;
         const res = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -28,7 +33,8 @@ export class FluxClient {
             },
             body: JSON.stringify({
                 query: query,
-                projectId: this.projectId
+                projectId: this.projectId,
+                params: params
             }),
             cache: 'no-store'
         });
@@ -39,6 +45,12 @@ export class FluxClient {
         }
 
         const data = await res.json();
+
+        // Check if Fluxbase returned an application-level SQL error
+        if (data.success === false || data.error) {
+            const msg = data.error?.message || data.error || 'SQL query execution failed';
+            throw new Error(`Fluxbase SQL Error: ${msg}`);
+        }
 
         // Standardize return format
         if (data.result && Array.isArray(data.result.rows)) {

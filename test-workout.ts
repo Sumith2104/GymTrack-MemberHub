@@ -1,4 +1,4 @@
-import { flux } from './src/lib/flux/client.ts';
+import { flux } from './src/lib/flux/client';
 
 async function testInsertWorkout() {
     const memberId = '26SSUMI0493Y'; // Taken from terminal URL: /me/workout-tracking?memberId=26SSUMI0493Y

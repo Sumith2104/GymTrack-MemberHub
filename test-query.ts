@@ -1,4 +1,4 @@
-import { flux } from './src/lib/flux/client.js';
+import { flux } from './src/lib/flux/client';
 
 async function test() {
     const email = 'sumithsumith4567890@gmail.com';

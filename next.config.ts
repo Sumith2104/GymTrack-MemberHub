@@ -20,6 +20,18 @@ const nextConfig: NextConfig = {
         hostname: 'uwnczkcsrhlxtvgkrrfw.supabase.co',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'fluxbasedb.me',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.fluxbasedb.me',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

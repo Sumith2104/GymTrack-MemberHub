@@ -26,11 +26,13 @@ async function test() {
 
     console.log("Running Query:", query);
 
-    const apiUrl = process.env.NEXT_PUBLIC_FLUX_API_URL || 'https://fluxbase.vercel.app/api';
-    const apiKey = process.env.FLUX_API_KEY;
-    const projectId = process.env.FLUX_PROJECT_ID;
+    const rawUrl = process.env.NEXT_PUBLIC_FLUX_API_URL || process.env.FLUXBASE_BASE_URL || 'https://fluxbasedb.me';
+    const cleanUrl = rawUrl.replace(/\/$/, '');
+    const apiUrl = cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+    const apiKey = process.env.FLUXBASE_API_KEY || process.env.FLUX_API_KEY;
+    const projectId = process.env.FLUXBASE_PROJECT_ID || process.env.FLUX_PROJECT_ID;
 
-    const endpoint = `${apiUrl.replace(/\/$/, '')}/execute-sql`;
+    const endpoint = `${apiUrl}/execute-sql`;
 
     try {
         const res = await fetch(endpoint, {
